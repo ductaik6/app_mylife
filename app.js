@@ -999,6 +999,34 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof updateHealth === 'function') updateHealth();
     if (typeof renderInitialWelcomeMessage === 'function') renderInitialWelcomeMessage();
     if (typeof renderSmartNotifications === 'function') renderSmartNotifications();
+
+    // 8. Tự động kiểm tra và tải cập nhật mới nhất từ Firebase Cloud nếu tài khoản có UID
+    const curAcc = savedAccounts.find(a => a.id === accId);
+    if (window.MyLifeFirebase?.isAvailable() && curAcc?.uid) {
+      window.MyLifeFirebase.fetchModuleFromCloud(curAcc.uid, 'tasks').then(cloudTasks => {
+        if (Array.isArray(cloudTasks) && cloudTasks.length > 0) {
+          tasks = cloudTasks;
+          localStorage.setItem(tasksKey, JSON.stringify(tasks));
+          if (typeof renderTasks === 'function') renderTasks();
+          if (typeof renderWeeklySchedule === 'function') renderWeeklySchedule();
+        }
+      });
+      window.MyLifeFirebase.fetchModuleFromCloud(curAcc.uid, 'health_data').then(cloudHealth => {
+        if (cloudHealth && typeof cloudHealth === 'object' && cloudHealth.lastActiveDate) {
+          healthData = cloudHealth;
+          localStorage.setItem(healthKey, JSON.stringify(healthData));
+          if (typeof updateHealth === 'function') updateHealth();
+        }
+      });
+      window.MyLifeFirebase.fetchModuleFromCloud(curAcc.uid, 'transactions').then(cloudTrans => {
+        if (Array.isArray(cloudTrans) && cloudTrans.length > 0) {
+          transactions = cloudTrans;
+          localStorage.setItem(transKey, JSON.stringify(transactions));
+          if (typeof renderFinanceOverviewCard === 'function') renderFinanceOverviewCard();
+          if (typeof renderAllFinanceViews === 'function' && financeUnlocked) renderAllFinanceViews();
+        }
+      });
+    }
   }
 
   function renderAccountUI() {
@@ -1650,6 +1678,105 @@ document.addEventListener('DOMContentLoaded', () => {
     openGoogleAuthScreen();
   });
 
+  // Đăng nhập nhanh bằng Firebase Google One-Click Popup
+  const btnFbGooglePopup = document.getElementById('btn-firebase-google-popup');
+  btnFbGooglePopup?.addEventListener('click', async () => {
+    const isEn = (typeof currentLang !== 'undefined' && currentLang === 'en');
+    if (!window.MyLifeFirebase || !window.MyLifeFirebase.isAvailable()) {
+      alert(isEn ? 'Firebase is not initialized or network is blocked!' : 'Firebase chưa được kết nối hoặc mạng bị chặn!');
+      return;
+    }
+
+    try {
+      btnFbGooglePopup.disabled = true;
+      btnFbGooglePopup.classList.add('opacity-70', 'pointer-events-none');
+      
+      const user = await window.MyLifeFirebase.signInWithGooglePopup();
+      if (user) {
+        handleFirebaseUserLoginSuccess(user);
+      }
+    } catch (err) {
+      console.error('Firebase Google Login Error:', err);
+      if (err.code !== 'auth/popup-closed-by-user' && err.code !== 'auth/cancelled-popup-request') {
+        const msg = err.code === 'auth/unauthorized-domain'
+          ? (isEn ? 'Domain not authorized in Firebase Console! Please add localhost/domain to Authorized Domains.' : 'Tên miền chưa được thêm vào mục Authorized Domains trong Firebase Console!')
+          : err.message;
+        alert((isEn ? 'Google Login Failed: ' : 'Đăng nhập Google thất bại: ') + msg);
+      }
+    } finally {
+      if (btnFbGooglePopup) {
+        btnFbGooglePopup.disabled = false;
+        btnFbGooglePopup.classList.remove('opacity-70', 'pointer-events-none');
+      }
+    }
+  });
+
+  function handleFirebaseUserLoginSuccess(user) {
+    const isEn = (typeof currentLang !== 'undefined' && currentLang === 'en');
+    const email = user.email || '';
+    const displayName = user.displayName || (email.split('@')[0] || 'User').toUpperCase();
+    const photoURL = user.photoURL || '';
+
+    // Kiểm tra xem tài khoản đã từng đăng nhập chưa
+    let existingAcc = savedAccounts.find(a => (a.email || '').toLowerCase() === email.toLowerCase());
+    let targetAccId = '';
+
+    if (existingAcc) {
+      existingAcc.name = displayName || existingAcc.name;
+      existingAcc.photoURL = photoURL;
+      existingAcc.isGoogle = true;
+      existingAcc.uid = user.uid;
+      targetAccId = existingAcc.id;
+    } else {
+      if (savedAccounts.length >= 20) {
+        alert(isEn ? 'Maximum limit of 20 accounts reached!' : 'Đã đạt giới hạn tối đa 20 tài khoản!');
+        return;
+      }
+
+      const newAcc = {
+        id: 'acc-gg-' + (user.uid ? user.uid.substring(0, 10) : Date.now()),
+        uid: user.uid,
+        name: displayName,
+        email: email,
+        password: '',
+        role: email.includes('.edu.vn') ? 'Cá nhân' : 'Thành viên',
+        color: '#4285F4',
+        initials: computeInitials(displayName),
+        isGoogle: true,
+        photoURL: photoURL,
+        createdAt: new Date().toISOString()
+      };
+
+      savedAccounts.push(newAcc);
+      targetAccId = newAcc.id;
+    }
+
+    activeAccountId = targetAccId;
+    localStorage.setItem('mylife_google_auth_done', 'true');
+    saveAccountsData();
+    renderAccountUI();
+    updateClock();
+    loadAccountData(activeAccountId);
+    closeGoogleAuthScreen();
+
+    // Đồng bộ tức thời dữ liệu đám mây Firebase nếu có
+    if (window.MyLifeFirebase && user.uid) {
+      window.MyLifeFirebase.fetchModuleFromCloud(user.uid, 'tasks').then(cloudTasks => {
+        if (Array.isArray(cloudTasks) && cloudTasks.length > 0) {
+          tasks = cloudTasks;
+          localStorage.setItem(getAccountDataKey('tasks', activeAccountId), JSON.stringify(tasks));
+          if (typeof renderTasks === 'function') renderTasks();
+          if (typeof renderWeeklySchedule === 'function') renderWeeklySchedule();
+        }
+      });
+    }
+
+    const successMsg = isEn 
+      ? `Welcome ${displayName}! Google authentication successful.` 
+      : `Chào mừng ${displayName}! Đã xác thực tài khoản Google thành công.`;
+    if (typeof showHint === 'function') showHint(successMsg);
+  }
+
   btnToggleGooglePwdVis?.addEventListener('click', () => {
     if (!inputGooglePwd) return;
     if (inputGooglePwd.type === 'password') {
@@ -2080,6 +2207,10 @@ document.addEventListener('DOMContentLoaded', () => {
     localStorage.setItem(getAccountDataKey('transactions'), JSON.stringify(transactions));
     if (activeAccountId === 'acc-1') {
       localStorage.setItem('mylife_transactions_v2', JSON.stringify(transactions));
+    }
+    const curAcc = savedAccounts.find(a => a.id === activeAccountId);
+    if (window.MyLifeFirebase?.isAvailable() && curAcc?.uid) {
+      window.MyLifeFirebase.syncModuleToCloud(curAcc.uid, 'transactions', transactions);
     }
     renderAllFinanceViews();
     renderFinanceOverviewCard();
@@ -3038,6 +3169,10 @@ document.addEventListener('DOMContentLoaded', () => {
     localStorage.setItem(getAccountDataKey('tasks'), JSON.stringify(tasks));
     if (activeAccountId === 'acc-1') {
       localStorage.setItem('mylife_tasks', JSON.stringify(tasks));
+    }
+    const curAcc = savedAccounts.find(a => a.id === activeAccountId);
+    if (window.MyLifeFirebase?.isAvailable() && curAcc?.uid) {
+      window.MyLifeFirebase.syncModuleToCloud(curAcc.uid, 'tasks', tasks);
     }
     renderTasks();
     renderDeepTasksView();
@@ -4340,6 +4475,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (activeAccountId === 'acc-1') {
       localStorage.setItem('mylife_health_data', JSON.stringify(healthData));
       localStorage.setItem('mylife_steps', healthData.steps);
+    }
+    const curAcc = savedAccounts.find(a => a.id === activeAccountId);
+    if (window.MyLifeFirebase && curAcc?.uid) {
+      window.MyLifeFirebase.syncModuleToCloud(curAcc.uid, 'health_data', healthData);
     }
     renderHealthOverviewCard();
     renderHealthView();
