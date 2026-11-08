@@ -3,7 +3,6 @@
  * Project: app-mylife-v1
  */
 
-// Cấu hình Firebase SDK của bạn
 const firebaseConfig = {
   apiKey: "AIzaSyCKyokKFdRYDw2O-kY5CJUg35x0O8W5wTQ",
   authDomain: "app-mylife-v1.firebaseapp.com",
@@ -14,7 +13,6 @@ const firebaseConfig = {
   measurementId: "G-Z9G7BV440L"
 };
 
-// Khởi tạo các dịch vụ Firebase
 let fbApp = null;
 let fbAuth = null;
 let fbDb = null;
@@ -25,11 +23,6 @@ try {
     fbApp = firebase.initializeApp(firebaseConfig);
     fbAuth = firebase.auth();
     fbDb = firebase.firestore();
-    
-    // Tự động kích hoạt lưu trữ offline trên Firestore để chạy mượt ngay cả khi mất mạng
-    try {
-      fbDb.enablePersistence({ synchronizeTabs: true }).catch(() => {});
-    } catch (e) {}
 
     if (typeof firebase.analytics === 'function') {
       try { fbAnalytics = firebase.analytics(); } catch (e) {}
@@ -48,15 +41,13 @@ window.MyLifeFirebase = {
   auth: fbAuth,
   db: fbDb,
   analytics: fbAnalytics,
-  isAvailable: () => !!fbAuth,
+  isAvailable: () => !!fbDb,
 
   /**
    * 1. Đăng nhập trực tiếp bằng Google Popup chính chủ
    */
   signInWithGooglePopup: async function() {
-    if (!fbAuth) {
-      throw new Error('Firebase Auth chưa được khởi tạo.');
-    }
+    if (!fbAuth) throw new Error('Firebase Auth chưa được khởi tạo.');
     const provider = new firebase.auth.GoogleAuthProvider();
     provider.addScope('profile');
     provider.addScope('email');
@@ -66,63 +57,74 @@ window.MyLifeFirebase = {
   },
 
   /**
-   * 2. Đăng nhập / Đăng ký bằng Email & Mật khẩu
+   * 2. Đồng bộ TOÀN BỘ dữ liệu tài khoản lên Firestore (hiển thị trực tiếp trong collection 'mylife_accounts')
    */
-  signInOrRegisterWithEmail: async function(email, password) {
-    if (!fbAuth) throw new Error('Firebase Auth chưa được khởi tạo.');
+  syncAccountDataToCloud: async function(account, payload) {
+    if (!fbDb) return false;
+    const accId = account.uid || account.id || 'acc-1';
     try {
-      const cred = await fbAuth.signInWithEmailAndPassword(email, password);
-      return cred.user;
-    } catch (err) {
-      if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
-        try {
-          const newCred = await fbAuth.createUserWithEmailAndPassword(email, password);
-          return newCred.user;
-        } catch (regErr) {
-          throw regErr;
-        }
-      }
-      throw err;
-    }
-  },
-
-  /**
-   * 3. Đăng xuất khỏi Firebase
-   */
-  logout: async function() {
-    if (fbAuth) {
-      await fbAuth.signOut();
-    }
-  },
-
-  /**
-   * 4. Đồng bộ dữ liệu phân hệ lên Firestore Cloud (Tasks, Health, Transactions)
-   */
-  syncModuleToCloud: async function(uid, moduleKey, data) {
-    if (!fbDb || !uid) return;
-    try {
-      await fbDb.collection('mylife_users').doc(uid).collection('modules').doc(moduleKey).set({
-        payload: data,
-        lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+      await fbDb.collection('mylife_accounts').doc(accId).set({
+        accountId: accId,
+        uid: account.uid || null,
+        name: account.name || 'Người dùng',
+        email: account.email || '',
+        role: account.role || 'Thành viên',
+        color: account.color || '#4285F4',
+        initials: account.initials || 'ML',
+        isGoogle: !!account.isGoogle,
+        tasks: payload.tasks || [],
+        health: payload.health || {},
+        transactions: payload.transactions || [],
+        projects: payload.projects || [],
+        lastSyncedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        clientTime: new Date().toISOString()
       }, { merge: true });
+
+      // Cập nhật trạng thái vào mylife_system
+      await fbDb.collection('mylife_system').doc('sync_status').set({
+        lastActiveAccount: accId,
+        lastActiveName: account.name || '',
+        lastSynced: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+
+      console.log(`☁️ [Firebase Cloud] Đã đồng bộ thành công cho: ${account.name} (${accId})`);
+      return true;
     } catch (err) {
-      console.warn(`[Firebase] Đồng bộ ${moduleKey} lên mây tạm hoãn:`, err.message);
+      console.error('[Firebase] Lỗi đồng bộ đám mây:', err);
+      return false;
     }
   },
 
   /**
-   * 5. Tải dữ liệu từ Firestore Cloud về máy
+   * 3. Tải toàn bộ dữ liệu tài khoản từ Firestore về máy
    */
-  fetchModuleFromCloud: async function(uid, moduleKey) {
-    if (!fbDb || !uid) return null;
+  fetchAccountDataFromCloud: async function(account) {
+    if (!fbDb) return null;
+    const accId = account.uid || account.id || 'acc-1';
     try {
-      const doc = await fbDb.collection('mylife_users').doc(uid).collection('modules').doc(moduleKey).get();
+      const doc = await fbDb.collection('mylife_accounts').doc(accId).get();
       if (doc.exists) {
-        return doc.data().payload;
+        return doc.data();
       }
     } catch (err) {
-      console.warn(`[Firebase] Tải ${moduleKey} từ mây thất bại:`, err.message);
+      console.warn('[Firebase] Lỗi tải dữ liệu từ mây:', err);
     }
     return null;
+  },
+
+  /**
+   * 4. Đồng bộ riêng từng phân hệ (Tasks, Health, Transactions)
+   */
+  syncModuleToCloud: async function(accId, moduleKey, data) {
+    if (!fbDb || !accId) return;
+    try {
+      const updateObj = {
+        [moduleKey]: data,
+        lastSyncedAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+      await fbDb.collection('mylife_accounts').doc(accId).set(updateObj, { merge: true });
+    } catch (err) {
+      console.warn(`[Firebase] Đồng bộ ${moduleKey} tạm hoãn:`, err.message);
+    }
   }
 };

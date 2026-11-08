@@ -1775,7 +1775,55 @@ document.addEventListener('DOMContentLoaded', () => {
       ? `Welcome ${displayName}! Google authentication successful.` 
       : `Chào mừng ${displayName}! Đã xác thực tài khoản Google thành công.`;
     if (typeof showHint === 'function') showHint(successMsg);
+
+    // Đồng bộ toàn bộ dữ liệu mới lên Firestore
+    setTimeout(() => {
+      triggerFullCloudSync(false);
+    }, 500);
   }
+
+  // Đồng bộ toàn bộ dữ liệu hiện tại lên Firebase Firestore
+  async function triggerFullCloudSync(showFeedback = false) {
+    if (!window.MyLifeFirebase || !window.MyLifeFirebase.isAvailable()) {
+      if (showFeedback) alert('Chưa kết nối được Firebase Firestore!');
+      return false;
+    }
+
+    const curAcc = getActiveAccount();
+    if (!curAcc) return false;
+
+    const payload = {
+      tasks: tasks || [],
+      health: healthData || {},
+      transactions: transactions || [],
+      projects: projects || []
+    };
+
+    const ok = await window.MyLifeFirebase.syncAccountDataToCloud(curAcc, payload);
+    if (ok && showFeedback) {
+      const isEn = (typeof currentLang !== 'undefined' && currentLang === 'en');
+      const msg = isEn 
+        ? `☁️ Cloud Sync successful for ${curAcc.name}! Data is now live on Firebase Firestore.` 
+        : `☁️ Đã đồng bộ thành công dữ liệu của ${curAcc.name} lên Firebase Firestore!`;
+      if (typeof showHint === 'function') showHint(msg);
+      else alert(msg);
+    }
+    return ok;
+  }
+
+  // Nút bấm "Đồng bộ lên Firebase ngay"
+  const btnSyncFirebase = document.getElementById('btn-sync-firebase-now');
+  btnSyncFirebase?.addEventListener('click', async () => {
+    const iconSpin = document.getElementById('icon-sync-firebase-spin');
+    const textBtn = document.getElementById('text-sync-firebase-btn');
+    if (iconSpin) iconSpin.classList.add('fa-spin');
+    if (textBtn) textBtn.textContent = 'Đang đồng bộ...';
+
+    await triggerFullCloudSync(true);
+
+    if (iconSpin) iconSpin.classList.remove('fa-spin');
+    if (textBtn) textBtn.textContent = 'Đồng bộ lên Firebase ngay';
+  });
 
   btnToggleGooglePwdVis?.addEventListener('click', () => {
     if (!inputGooglePwd) return;
@@ -2209,8 +2257,9 @@ document.addEventListener('DOMContentLoaded', () => {
       localStorage.setItem('mylife_transactions_v2', JSON.stringify(transactions));
     }
     const curAcc = savedAccounts.find(a => a.id === activeAccountId);
-    if (window.MyLifeFirebase?.isAvailable() && curAcc?.uid) {
-      window.MyLifeFirebase.syncModuleToCloud(curAcc.uid, 'transactions', transactions);
+    const targetId = curAcc?.uid || curAcc?.id || activeAccountId;
+    if (window.MyLifeFirebase?.isAvailable() && targetId) {
+      window.MyLifeFirebase.syncModuleToCloud(targetId, 'transactions', transactions);
     }
     renderAllFinanceViews();
     renderFinanceOverviewCard();
@@ -3171,8 +3220,9 @@ document.addEventListener('DOMContentLoaded', () => {
       localStorage.setItem('mylife_tasks', JSON.stringify(tasks));
     }
     const curAcc = savedAccounts.find(a => a.id === activeAccountId);
-    if (window.MyLifeFirebase?.isAvailable() && curAcc?.uid) {
-      window.MyLifeFirebase.syncModuleToCloud(curAcc.uid, 'tasks', tasks);
+    const targetId = curAcc?.uid || curAcc?.id || activeAccountId;
+    if (window.MyLifeFirebase?.isAvailable() && targetId) {
+      window.MyLifeFirebase.syncModuleToCloud(targetId, 'tasks', tasks);
     }
     renderTasks();
     renderDeepTasksView();
@@ -4477,8 +4527,9 @@ document.addEventListener('DOMContentLoaded', () => {
       localStorage.setItem('mylife_steps', healthData.steps);
     }
     const curAcc = savedAccounts.find(a => a.id === activeAccountId);
-    if (window.MyLifeFirebase && curAcc?.uid) {
-      window.MyLifeFirebase.syncModuleToCloud(curAcc.uid, 'health_data', healthData);
+    const targetId = curAcc?.uid || curAcc?.id || activeAccountId;
+    if (window.MyLifeFirebase?.isAvailable() && targetId) {
+      window.MyLifeFirebase.syncModuleToCloud(targetId, 'health', healthData);
     }
     renderHealthOverviewCard();
     renderHealthView();
@@ -9401,5 +9452,12 @@ Quy tắc: Khi người dùng yêu cầu tác vụ, BẮT BUỘC PHẢI GỌI FU
   if (localStorage.getItem('mylife_google_auth_done') !== 'true') {
     openGoogleAuthScreen();
   }
+
+  // Tự động đẩy đồng bộ dữ liệu ban đầu lên Firebase Firestore sau 1.2 giây
+  setTimeout(() => {
+    if (typeof triggerFullCloudSync === 'function') {
+      triggerFullCloudSync(false);
+    }
+  }, 1200);
 
 });
