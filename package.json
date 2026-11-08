@@ -1,0 +1,13 @@
+{
+  "name": "mylife_app",
+  "version": "1.0.0",
+  "description": "MyLife - Dashboard Quản lý Cá nhân & Năng suất",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": ["dashboard", "productivity", "pomodoro", "personal-management"],
+  "author": "Nguyen Duc Tai",
+  "license": "ISC"
+}
+

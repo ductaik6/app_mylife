@@ -1,0 +1,1697 @@
+/* Custom Styles & Micro-interactions for MyLife Dashboard */
+
+/* Smooth custom scrollbars */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; transition: background 0.2s ease; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+html.dark ::-webkit-scrollbar-thumb { background: #334155; }
+html.dark ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+/* View Entrance Animation */
+@keyframes viewFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.view-animate-in {
+  animation: viewFadeIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Bell Ring & Icon Micro-interactions */
+@keyframes bellRing {
+  0%, 100% { transform: rotate(0deg); }
+  20% { transform: rotate(16deg); }
+  40% { transform: rotate(-14deg); }
+  60% { transform: rotate(10deg); }
+  80% { transform: rotate(-6deg); }
+}
+
+#btn-notifications:hover i {
+  animation: bellRing 0.55s ease-in-out;
+  color: #2563eb;
+}
+html.dark #btn-notifications:hover i {
+  color: #60a5fa;
+}
+
+#btn-header-theme-toggle i {
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.2s ease;
+}
+#btn-header-theme-toggle:hover i {
+  transform: rotate(-22deg) scale(1.18);
+  color: #4f46e5;
+}
+html.dark #btn-header-theme-toggle:hover i {
+  color: #fbbf24;
+}
+
+#btn-header-lang-toggle i {
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+#btn-header-lang-toggle:hover i {
+  transform: rotate(20deg) scale(1.15);
+}
+
+#btn-open-guide i {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+#btn-open-guide:hover i {
+  transform: scale(1.22) rotate(-8deg);
+}
+
+#btn-calendar i {
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+#btn-calendar:hover i {
+  transform: scale(1.15);
+  color: #2563eb;
+}
+
+/* Logo Home Hover Micro-interaction */
+#logo-home .logo-icon-box {
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+}
+#logo-home:hover .logo-icon-box {
+  transform: scale(1.08) rotate(-6deg);
+  box-shadow: 0 12px 24px -4px rgba(37, 99, 235, 0.45);
+}
+
+/* Sidebar Navigation & Icon Boxes */
+.nav-item {
+  position: relative;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.nav-item .nav-icon-box {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8fafc;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  flex-shrink: 0;
+}
+.nav-item:hover {
+  transform: translateX(3px);
+}
+.nav-item:hover .nav-icon-box {
+  transform: scale(1.08);
+  background-color: #eff6ff;
+  color: #2563eb;
+  border-color: #bfdbfe;
+}
+.nav-item.active {
+  background: linear-gradient(90deg, #eff6ff 0%, rgba(239, 246, 255, 0.5) 100%);
+  color: #1d4ed8;
+  font-weight: 700;
+  box-shadow: inset 4px 0 0 0 #2563eb;
+}
+.nav-item.active .nav-icon-box {
+  background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%);
+  color: #ffffff !important;
+  border-color: transparent;
+  box-shadow: 0 4px 12px -2px rgba(37, 99, 235, 0.4);
+}
+html.dark .nav-item .nav-icon-box {
+  background-color: #0f172a;
+  color: #94a3b8;
+  border-color: #334155;
+}
+html.dark .nav-item:hover .nav-icon-box {
+  background-color: #1e293b;
+  color: #60a5fa;
+  border-color: #3b82f6;
+}
+html.dark .nav-item.active {
+  background: linear-gradient(90deg, rgba(30, 58, 138, 0.45) 0%, rgba(30, 41, 59, 0.4) 100%) !important;
+  color: #60a5fa !important;
+  box-shadow: inset 4px 0 0 0 #3b82f6 !important;
+}
+html.dark .nav-item.active .nav-icon-box {
+  background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
+  color: #ffffff !important;
+  border-color: transparent;
+  box-shadow: 0 4px 14px -2px rgba(59, 130, 246, 0.5);
+}
+
+/* Modal animation */
+@keyframes modalFadeIn {
+  from { opacity: 0; transform: scale(0.96) translateY(6px); }
+  to   { opacity: 1; transform: scale(1)    translateY(0);   }
+}
+.animate-in { animation: modalFadeIn 0.22s cubic-bezier(0.16,1,0.3,1) forwards; }
+
+/* Card hover smooth lift & Icon Badge response */
+.shadow-soft {
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04), 0 2px 6px -1px rgba(15, 23, 42, 0.02);
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease;
+}
+.shadow-card-hover:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 32px -6px rgba(15, 23, 42, 0.08), 0 6px 14px -3px rgba(15, 23, 42, 0.04);
+}
+.card-icon-badge {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+}
+.shadow-soft:hover .card-icon-badge {
+  transform: scale(1.08) rotate(-4deg);
+}
+
+/* ===== FINANCE LOCK BLUR ===== */
+/* Các vùng bị ẩn khi chưa đăng nhập */
+.finance-content-blurred {
+  filter: blur(10px) brightness(0.97);
+  pointer-events: none;
+  user-select: none;
+  transition: filter 0.4s ease;
+}
+
+/* Amount input - letter spacing */
+#trans-amount { letter-spacing: 0.5px; }
+
+/* Chart.js canvas responsive */
+canvas { max-width: 100%; }
+
+/* ===== KANBAN DRAG & DROP & CARDS ===== */
+.kanban-card {
+  cursor: grab;
+  user-select: none;
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s ease, opacity 0.15s ease;
+}
+.kanban-card:active {
+  cursor: grabbing;
+}
+.kanban-card.dragging {
+  opacity: 0.45;
+  transform: scale(0.98);
+}
+.kanban-dropzone.drag-over {
+  background-color: rgba(99, 102, 241, 0.08) !important;
+  border-color: #6366f1 !important;
+}
+
+/* Subtask line hover */
+.subtask-item:hover .subtask-del-btn {
+  opacity: 1;
+}
+
+/* ===== SCHEDULE CALENDAR MATRIX (IMAGE 1 STYLE) ===== */
+.cal-time-cell {
+  height: 52px;
+  vertical-align: middle;
+}
+.cal-slot-cell {
+  height: 52px;
+  min-width: 0;
+  padding: 3px 2px;
+  vertical-align: top;
+  position: relative;
+  transition: background-color 0.18s ease;
+  overflow: hidden;
+}
+.cal-slot-cell:hover {
+  background-color: rgba(239, 246, 255, 0.65);
+  cursor: pointer;
+}
+html.dark .cal-slot-cell:hover {
+  background-color: rgba(30, 58, 138, 0.22);
+}
+.cal-slot-cell:hover::after {
+  content: '+';
+  position: absolute;
+  right: 2px;
+  top: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  background-color: #dbeafe;
+  color: #2563eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+  box-shadow: 0 1px 2px rgba(37, 99, 235, 0.15);
+  pointer-events: none;
+}
+html.dark .cal-slot-cell:hover::after {
+  background-color: #1e3a8a;
+  color: #93c5fd;
+}
+.cal-pill {
+  display: block;
+  width: 100%;
+  padding: 5px 8px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.25;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.18s ease, filter 0.15s ease;
+  margin-bottom: 3px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+.cal-pill:hover {
+  transform: translateY(-1.5px) scale(1.01);
+  box-shadow: 0 5px 12px rgba(0,0,0,0.1);
+  filter: brightness(0.98);
+}
+
+/* Pastel colors for pills with crisp left accent bar */
+.pill-mint   { background-color: #D1FAE5; color: #065F46; border: 1px solid #A7F3D0; border-left: 3.5px solid #10B981; }
+.pill-sky    { background-color: #DBEAFE; color: #1E40AF; border: 1px solid #BFDBFE; border-left: 3.5px solid #3B82F6; }
+.pill-pink   { background-color: #FCE7F3; color: #9D174D; border: 1px solid #FBCFE8; border-left: 3.5px solid #EC4899; }
+.pill-amber  { background-color: #FEF3C7; color: #92400E; border: 1px solid #FDE68A; border-left: 3.5px solid #F59E0B; }
+.pill-purple { background-color: #F3E8FF; color: #6B21A8; border: 1px solid #E9D5FF; border-left: 3.5px solid #A855F7; }
+
+/* ===== 2-COLUMN BOARD & OVERVIEW CARDS (IMAGE 2 STYLE) ===== */
+.clean-task-card {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.clean-task-card:hover {
+  transform: translateY(-2.5px);
+  box-shadow: 0 10px 22px -4px rgba(37, 99, 235, 0.09), 0 4px 8px -2px rgba(0, 0, 0, 0.04);
+  border-color: #93c5fd;
+}
+html.dark .clean-task-card:hover {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 10px 24px -4px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Omnibox search dropdown item highlight */
+.search-result-item:hover {
+  background-color: #f8fafc;
+}
+
+/* Language Settings Cards */
+.lang-option-card {
+  border-color: #e2e8f0;
+  background-color: #ffffff;
+}
+.lang-option-card.active {
+  border-color: #2563eb !important;
+  background-color: #eff6ff !important;
+  box-shadow: 0 4px 15px -2px rgba(37, 99, 235, 0.12);
+}
+.lang-option-card.active .lang-check-circle {
+  background-color: #2563eb !important;
+  border-color: #2563eb !important;
+}
+.lang-check-circle i {
+  display: none;
+}
+.lang-option-card.active .lang-check-circle i {
+  display: block;
+}
+
+/* Theme Settings Cards */
+.theme-opt-card {
+  border-color: #e2e8f0;
+  background-color: #ffffff;
+}
+.theme-opt-card.active {
+  border-color: #4f46e5 !important;
+  background-color: #f5f3ff !important;
+  box-shadow: 0 4px 15px -2px rgba(79, 70, 229, 0.12);
+}
+.theme-opt-card.active .theme-check-circle {
+  background-color: #4f46e5 !important;
+  border-color: #4f46e5 !important;
+}
+.theme-check-circle i {
+  display: none;
+}
+.theme-opt-card.active .theme-check-circle i {
+  display: block;
+}
+
+/* ===== COMPREHENSIVE DARK MODE SYSTEM ===== */
+html.dark {
+  color-scheme: dark;
+}
+html.dark body {
+  background-color: #0b1120 !important;
+  color: #f1f5f9 !important;
+}
+html.dark aside {
+  background-color: #111827 !important;
+  border-color: #1f2937 !important;
+}
+html.dark header {
+  background-color: rgba(17, 24, 39, 0.95) !important;
+  border-color: #1f2937 !important;
+}
+html.dark .bg-white {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+  color: #f8fafc !important;
+}
+html.dark .bg-slate-50, 
+html.dark .bg-slate-50\/80, 
+html.dark .bg-slate-50\/50,
+html.dark .bg-slate-50\/40 {
+  background-color: #0f172a !important;
+  border-color: #334155 !important;
+}
+html.dark .bg-slate-100, 
+html.dark .bg-slate-100\/90,
+html.dark .bg-slate-100\/70 {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+}
+html.dark .text-slate-900, 
+html.dark .text-slate-800 {
+  color: #f8fafc !important;
+}
+html.dark .text-slate-700, 
+html.dark .text-slate-600 {
+  color: #cbd5e1 !important;
+}
+html.dark .text-slate-500, 
+html.dark .text-slate-400 {
+  color: #cbd5e1 !important;
+}
+html.dark .border-slate-100, 
+html.dark .border-slate-200, 
+html.dark .border-slate-200\/80, 
+html.dark .border-slate-200\/90,
+html.dark .border-slate-200\/50,
+html.dark .divide-slate-100 > :not([hidden]) ~ :not([hidden]),
+html.dark .divide-slate-200 > :not([hidden]) ~ :not([hidden]) {
+  border-color: #334155 !important;
+}
+html.dark input:not([type="checkbox"]):not([type="radio"]), 
+html.dark select, 
+html.dark textarea {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+  border-color: #334155 !important;
+}
+html.dark .nav-item {
+  color: #94a3b8;
+}
+html.dark .nav-item:hover {
+  background-color: #1e293b !important;
+  color: #f8fafc !important;
+}
+html.dark .nav-item.active {
+  background-color: #1e3a8a !important;
+  color: #93c5fd !important;
+}
+html.dark #table-weekly-schedule th {
+  background-color: #0f172a !important;
+  border-color: #334155 !important;
+  color: #cbd5e1 !important;
+}
+html.dark #table-weekly-schedule td {
+  border-color: #334155 !important;
+}
+html.dark .cal-time-cell {
+  background-color: #0f172a !important;
+  color: #94a3b8 !important;
+  border-color: #334155 !important;
+}
+html.dark .cal-slot-cell:hover {
+  background-color: rgba(30, 41, 59, 0.6) !important;
+}
+html.dark .clean-task-card {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+}
+html.dark .clean-task-card:hover {
+  border-color: #64748b !important;
+}
+html.dark .theme-opt-card {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+}
+html.dark .theme-opt-card.active {
+  background-color: #312e81 !important;
+  border-color: #818cf8 !important;
+}
+html.dark .lang-option-card {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+}
+html.dark .lang-option-card.active {
+  background-color: #1e3a8a !important;
+  border-color: #60a5fa !important;
+}
+html.dark #hint-toast {
+  background-color: #1e293b !important;
+  border-color: #475569 !important;
+}
+
+/* ============================================================
+ * NOTIFICATION POPUP & ITEM CARDS (HIGH CONTRAST & LEGIBILITY)
+ * ============================================================ */
+.noti-card {
+  transition: all 0.2s ease;
+}
+.noti-card-urgent {
+  background-color: #fff1f2 !important;
+  border-color: #fecdd3 !important;
+}
+.noti-card-urgent .noti-item-title { color: #9f1239 !important; }
+.noti-card-urgent .noti-item-desc { color: #881337 !important; }
+.noti-card-urgent .noti-icon-box { background-color: #ffe4e6 !important; color: #e11d48 !important; }
+
+.noti-card-warning {
+  background-color: #fffbeb !important;
+  border-color: #fde68a !important;
+}
+.noti-card-warning .noti-item-title { color: #92400e !important; }
+.noti-card-warning .noti-item-desc { color: #78350f !important; }
+.noti-card-warning .noti-icon-box { background-color: #fef3c7 !important; color: #d97706 !important; }
+
+.noti-card-success {
+  background-color: #f0fdf4 !important;
+  border-color: #bbf7d0 !important;
+}
+.noti-card-success .noti-item-title { color: #166534 !important; }
+.noti-card-success .noti-item-desc { color: #14532d !important; }
+.noti-card-success .noti-icon-box { background-color: #dcfce7 !important; color: #16a34a !important; }
+
+.noti-card-report {
+  background-color: #eff6ff !important;
+  border-color: #bfdbfe !important;
+}
+.noti-card-report .noti-item-title { color: #1e40af !important; }
+.noti-card-report .noti-item-desc { color: #1e3a8a !important; }
+.noti-card-report .noti-icon-box { background-color: #dbeafe !important; color: #2563eb !important; }
+
+.noti-card-info {
+  background-color: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+}
+.noti-card-info .noti-item-title { color: #0f172a !important; }
+.noti-card-info .noti-item-desc { color: #334155 !important; }
+.noti-card-info .noti-icon-box { background-color: #f1f5f9 !important; color: #64748b !important; }
+
+/* DARK MODE - DEEP GLOWING BACKGROUNDS & BRIGHT CRISP TEXT */
+html.dark #dropdown-noti {
+  background-color: #111827 !important;
+  border-color: #374151 !important;
+  box-shadow: 0 20px 40px -8px rgba(0,0,0,0.7) !important;
+}
+html.dark .noti-card-urgent {
+  background-color: #2e0813 !important;
+  border-color: #881337 !important;
+}
+html.dark .noti-card-urgent .noti-item-title { color: #fecdd3 !important; }
+html.dark .noti-card-urgent .noti-item-desc { color: #fda4af !important; }
+html.dark .noti-card-urgent .noti-icon-box { background-color: #4c0519 !important; color: #fb7185 !important; }
+
+html.dark .noti-card-warning {
+  background-color: #271406 !important;
+  border-color: #78350f !important;
+}
+html.dark .noti-card-warning .noti-item-title { color: #fde68a !important; }
+html.dark .noti-card-warning .noti-item-desc { color: #fcd34d !important; }
+html.dark .noti-card-warning .noti-icon-box { background-color: #451a03 !important; color: #fbbf24 !important; }
+
+html.dark .noti-card-success {
+  background-color: #062314 !important;
+  border-color: #14532d !important;
+}
+html.dark .noti-card-success .noti-item-title { color: #bbf7d0 !important; }
+html.dark .noti-card-success .noti-item-desc { color: #86efac !important; }
+html.dark .noti-card-success .noti-icon-box { background-color: #052e16 !important; color: #4ade80 !important; }
+
+html.dark .noti-card-report {
+  background-color: #0d1e38 !important;
+  border-color: #1e3a8a !important;
+}
+html.dark .noti-card-report .noti-item-title { color: #bfdbfe !important; }
+html.dark .noti-card-report .noti-item-desc { color: #93c5fd !important; }
+html.dark .noti-card-report .noti-icon-box { background-color: #172554 !important; color: #60a5fa !important; }
+
+html.dark .noti-card-info {
+  background-color: #111827 !important;
+  border-color: #374151 !important;
+}
+html.dark .noti-card-info .noti-item-title { color: #f8fafc !important; }
+html.dark .noti-card-info .noti-item-desc { color: #cbd5e1 !important; }
+html.dark .noti-card-info .noti-icon-box { background-color: #1f2937 !important; color: #9ca3af !important; }
+
+
+/* ============================================================
+ * AI COPILOT CHATBOT DRAWER & MESSAGE STYLES (PAPER RETRO THEME)
+ * ============================================================ */
+#ai-copilot-minimized-bubble {
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+html.dark #ai-copilot-minimized-bubble > div {
+  background-color: #134e4a !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: 3px 3px 0px #cbd5e1 !important;
+}
+
+#ai-copilot-drawer {
+  border: 2.5px solid #1e293b;
+  box-shadow: 4px 4px 0px #1e293b;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+}
+
+html.dark #ai-copilot-drawer {
+  background-color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: 4px 4px 0px #cbd5e1 !important;
+}
+
+html.dark #ai-copilot-drawer > div:first-child {
+  background-color: #134e4a !important;
+  border-bottom-color: #cbd5e1 !important;
+}
+
+html.dark #ai-chat-messages {
+  background-color: #0b1120 !important;
+}
+
+#ai-suggestion-chips-bar {
+  background-color: #f7f4ea;
+  border-top: 2px solid #1e293b;
+}
+
+html.dark #ai-suggestion-chips-bar {
+  background-color: #0f172a !important;
+  border-top-color: #cbd5e1 !important;
+}
+
+.ai-sample-chip {
+  background-color: #ffffff;
+  color: #1e293b;
+  border: 2px solid #1e293b;
+  box-shadow: 1.5px 1.5px 0px #1e293b;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 800;
+  transition: all 0.15s ease;
+}
+
+.ai-sample-chip:hover {
+  transform: translateY(-1px);
+  box-shadow: 2px 2px 0px #1e293b;
+}
+
+.ai-sample-chip:active {
+  transform: translate(1px, 1px);
+  box-shadow: none;
+}
+
+html.dark .ai-sample-chip {
+  background-color: #1e293b !important;
+  color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: 1.5px 1.5px 0px #cbd5e1 !important;
+}
+
+html.dark .ai-sample-chip:hover {
+  background-color: #334155 !important;
+  color: #facc15 !important;
+}
+
+html.dark #ai-chat-form {
+  background-color: #0f172a !important;
+  border-top-color: #cbd5e1 !important;
+}
+
+html.dark #ai-chat-input {
+  background-color: #1e293b !important;
+  color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+}
+
+html.dark #ai-chat-input::placeholder {
+  color: #94a3b8 !important;
+}
+
+html.dark #ai-chat-input:focus {
+  background-color: #0f172a !important;
+  border-color: #facc15 !important;
+}
+
+html.dark #btn-ai-send {
+  background-color: #ef4444 !important;
+  border-color: #ffffff !important;
+  box-shadow: 2px 2px 0px #ffffff !important;
+}
+
+html.dark #btn-ai-copilot-toggle {
+  background-color: #134e4a !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: 3px 3px 0px #cbd5e1 !important;
+}
+
+html.dark #setting-card-gemini {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+}
+
+html.dark #setting-card-gemini .bg-slate-50 {
+  background-color: #0f172a !important;
+  border-color: #334155 !important;
+}
+
+html.dark #input-gemini-api-key {
+  background-color: #1e293b !important;
+  color: #f8fafc !important;
+  border-color: #334155 !important;
+}
+
+/* Chat Bubbles (Vintage Paper Blocky Style) */
+.ai-msg-user {
+  background-color: #fbbf24;
+  color: #0f172a;
+  border: 2px solid #1e293b;
+  box-shadow: 1.5px 1.5px 0px #1e293b;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  border-radius: 16px;
+  border-bottom-right-radius: 4px;
+}
+
+html.dark .ai-msg-user {
+  background-color: #facc15 !important;
+  color: #000000 !important;
+  border-color: #ffffff !important;
+  box-shadow: 1.5px 1.5px 0px #ffffff !important;
+}
+
+.ai-msg-bot {
+  background-color: #ffffff;
+  color: #1e293b;
+  border: 2px solid #1e293b;
+  box-shadow: 1.5px 1.5px 0px #1e293b;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 600;
+  border-radius: 16px;
+  border-top-left-radius: 4px;
+}
+
+html.dark .ai-msg-bot {
+  background-color: #1e293b !important;
+  color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: 1.5px 1.5px 0px #cbd5e1 !important;
+}
+
+.ai-action-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  margin-top: 6px;
+}
+
+.ai-action-success {
+  background-color: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+html.dark .ai-action-success {
+  background-color: #064e3b;
+  color: #a7f3d0;
+  border-color: #047857;
+}
+
+.ai-action-nav {
+  background-color: #eff6ff;
+  color: #1e40af;
+  border: 1px solid #bfdbfe;
+}
+html.dark .ai-action-nav {
+  background-color: #1e3a8a;
+  color: #bfdbfe;
+  border-color: #2563eb;
+}
+
+/* ============================================================
+ * HEALTH & WELLNESS TRACKING ENHANCEMENTS
+ * ============================================================ */
+.water-cup-btn {
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+}
+.water-cup-btn:hover {
+  transform: translateY(-3px) scale(1.08);
+}
+.water-cup-btn.filled {
+  background: linear-gradient(135deg, #0284c7 0%, #0ea5e9 100%) !important;
+  color: #ffffff !important;
+  border-color: #38bdf8 !important;
+  box-shadow: 0 4px 12px -2px rgba(14, 165, 233, 0.4);
+}
+.water-cup-btn.filled i {
+  color: #e0f2fe !important;
+}
+
+@keyframes waterDropPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.12); }
+}
+.animate-water-pulse {
+  animation: waterDropPulse 2s infinite ease-in-out;
+}
+
+.sleep-stage-bar {
+  transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.health-kpi-card {
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.28s ease, border-color 0.25s ease;
+}
+.health-kpi-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 32px -6px rgba(15, 23, 42, 0.08), 0 6px 14px -3px rgba(15, 23, 42, 0.04);
+}
+html.dark .health-kpi-card {
+  background-color: #1e293b;
+  border-color: #334155;
+}
+html.dark .health-kpi-card:hover {
+  box-shadow: 0 16px 32px -6px rgba(0, 0, 0, 0.5);
+  border-color: #475569;
+}
+
+/* ============================================================
+ * BENTO HEALTH WIDGET & VISUAL BLOCK SYSTEM
+ * ============================================================ */
+.bento-block {
+  border-radius: 24px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.28s ease, filter 0.2s ease;
+}
+.bento-block:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.25);
+}
+
+.bento-sub-tile {
+  background: rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 14px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+.bento-sub-tile:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateY(-1px);
+}
+
+.bento-glass-btn {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+  border-radius: 12px;
+  font-weight: 700;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.bento-glass-btn:hover {
+  background: rgba(255, 255, 255, 0.32);
+  transform: scale(1.05);
+}
+.bento-glass-btn:active {
+  transform: scale(0.95);
+}
+
+/* Neon Cup Graphical Tiles */
+.neon-cup-tile {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  border-radius: 14px;
+  padding: 10px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  user-select: none;
+}
+.neon-cup-tile:hover {
+  transform: translateY(-2px) scale(1.06);
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+.neon-cup-tile.active {
+  background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%) !important;
+  border-color: #38bdf8 !important;
+  color: #ffffff !important;
+  box-shadow: 0 6px 18px -2px rgba(14, 165, 233, 0.5);
+}
+.neon-cup-tile.active i {
+  color: #ffffff !important;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+}
+
+/* Sleep cycle block sequence */
+.sleep-cycle-block {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 12px;
+  padding: 8px 6px;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+.sleep-cycle-block:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+/* ============================================================
+ * VINTAGE BULLET JOURNAL / DOTTED PAPER THEME (MATCHING MOCKUP)
+ * ============================================================ */
+:root {
+  --paper-canvas: #f7f4ea;
+  --paper-dots: #d1c7b7;
+  --paper-surface: #fffefb;
+  --paper-card: #ffffff;
+  --paper-ink: #1e293b;
+  --paper-border: 2px solid #1e293b;
+  --paper-shadow: 2px 2px 0px #1e293b;
+  --paper-shadow-md: 3px 3px 0px #1e293b;
+  --paper-shadow-lg: 4px 4px 0px #1e293b;
+}
+
+body {
+  background-color: #f7f4ea !important;
+  background-image: radial-gradient(#d1c7b7 1.5px, transparent 1.5px) !important;
+  background-size: 20px 20px !important;
+  color: #1e293b !important;
+  font-family: 'Nunito', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+
+/* Paper box containers and cards with 2px ink borders */
+.paper-box {
+  background-color: #fffefb;
+  border: 2px solid #1e293b;
+  border-radius: 18px;
+  box-shadow: 3px 3px 0px #1e293b;
+}
+
+.paper-card {
+  background-color: #ffffff;
+  border: 2px solid #1e293b;
+  border-radius: 14px;
+  box-shadow: 2px 2px 0px #1e293b;
+}
+
+/* Top Floating Capsule Navigation Bar */
+.paper-capsule-bar {
+  background-color: #fffefb;
+  border: 2.5px solid #1e293b;
+  border-radius: 20px;
+  box-shadow: 3.5px 3.5px 0px #1e293b;
+  transition: all 0.2s ease;
+}
+
+/* Logo MYLIFE Button (Màu đỏ cam san hô bo góc chuẩn ảnh mẫu) */
+.paper-logo-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 15px;
+  border-radius: 12px;
+  background-color: #f25c54;
+  color: #ffffff;
+  border: 2px solid #1e293b;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 900;
+  font-size: 13.5px;
+  letter-spacing: -0.01em;
+  box-shadow: 2px 2px 0px #1e293b;
+  transition: all 0.15s ease;
+  user-select: none;
+  cursor: pointer;
+}
+.paper-logo-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 3px 3px 0px #1e293b;
+  background-color: #e63946;
+}
+.paper-logo-btn:active {
+  transform: translateY(1px);
+  box-shadow: 0.5px 0.5px 0px #1e293b;
+}
+
+/* Navigation Buttons: Bo góc 12px kiểu thẻ Sticker giấy chuẩn ảnh 2 */
+.paper-nav-pill,
+.paper-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6.5px 13px;
+  border-radius: 12px;
+  border: 2px solid #1e293b;
+  background-color: #ffffff;
+  color: #1e293b;
+  font-family: 'Nunito', sans-serif;
+  font-size: 12.5px;
+  font-weight: 800;
+  transition: all 0.15s ease;
+  cursor: pointer;
+  box-shadow: 2px 2px 0px #1e293b;
+  user-select: none;
+  white-space: nowrap;
+}
+.paper-nav-pill:hover,
+.paper-nav-btn:hover {
+  background-color: #fef9c3;
+  color: #0f172a;
+  transform: translateY(-1px);
+  box-shadow: 3px 3px 0px #1e293b;
+}
+.paper-nav-pill:active,
+.paper-nav-btn:active {
+  transform: translateY(1px);
+  box-shadow: 0.5px 0.5px 0px #1e293b;
+}
+
+/* Active tab style: Vàng tươi rực rỡ chữ đen mực chuẩn 100% ảnh mẫu */
+.paper-nav-pill.active,
+.paper-nav-btn.active {
+  background-color: #f59e0b !important;
+  color: #0f172a !important;
+  border-color: #1e293b !important;
+  font-weight: 900 !important;
+  box-shadow: 2.5px 2.5px 0px #1e293b !important;
+}
+.paper-nav-pill.active i,
+.paper-nav-btn.active i {
+  color: #0f172a !important;
+}
+
+/* Ô tìm kiếm bo góc giấy */
+.paper-search-input {
+  background-color: #fffefb;
+  border: 2px solid #1e293b;
+  border-radius: 12px;
+  padding: 6.5px 12px 6.5px 34px;
+  font-family: 'Nunito', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: #0f172a;
+  box-shadow: 1.5px 1.5px 0px #1e293b;
+  transition: all 0.15s ease;
+}
+.paper-search-input:focus {
+  outline: none;
+  border-color: #1e293b;
+  background-color: #ffffff;
+  box-shadow: 2.5px 2.5px 0px #1e293b;
+}
+
+/* Nút Trợ lý AI (Xanh ngọc / Emerald đậm nét) */
+.paper-ai-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6.5px;
+  padding: 6.5px 14px;
+  border-radius: 12px;
+  background-color: #2a9d8f;
+  color: #ffffff;
+  border: 2px solid #1e293b;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 900;
+  font-size: 12.5px;
+  box-shadow: 2.5px 2.5px 0px #1e293b;
+  transition: all 0.15s ease;
+  cursor: pointer;
+  user-select: none;
+}
+.paper-ai-btn:hover {
+  background-color: #21867a;
+  transform: translateY(-1px);
+  box-shadow: 3.5px 3.5px 0px #1e293b;
+}
+.paper-ai-btn:active {
+  transform: translateY(1px);
+  box-shadow: 0.5px 0.5px 0px #1e293b;
+}
+
+/* Thẻ đại diện cá nhân AD chuẩn ảnh 2 */
+.paper-avatar-box {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 10px 4px 4px;
+  border-radius: 12px;
+  background-color: #ffffff;
+  border: 2px solid #1e293b;
+  box-shadow: 2px 2px 0px #1e293b;
+  user-select: none;
+}
+.paper-avatar-box .avatar-inner {
+  width: 25px;
+  height: 25px;
+  border-radius: 7px;
+  background-color: #f25c54;
+  color: #ffffff;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 900;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid #1e293b;
+}
+
+/* Các nút tiện ích (Chuông, Sáng/Tối, Ngôn ngữ) */
+.paper-util-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background-color: #ffffff;
+  border: 2px solid #1e293b;
+  color: #1e293b;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 1.5px 1.5px 0px #1e293b;
+  transition: all 0.15s ease;
+}
+.paper-util-btn:hover {
+  background-color: #fef9c3;
+  transform: translateY(-1px);
+  box-shadow: 2.5px 2.5px 0px #1e293b;
+}
+
+/* Event Pills inside Weekly Schedule Grid */
+.cal-pill {
+  display: block;
+  width: 100%;
+  padding: 3px 6px;
+  border-radius: 6px !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  line-height: 1.25;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  margin-bottom: 2px;
+  border: 1.5px solid #1e293b !important;
+  color: #0f172a !important;
+  box-shadow: 1px 1px 0px #1e293b !important;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.cal-pill:hover {
+  transform: translateY(-1px);
+  box-shadow: 2px 2px 0px #1e293b !important;
+}
+
+/* Pastel color palette for pills matching reference image */
+.pill-mint   { background-color: #5eead4 !important; border: 2px solid #1e293b !important; color: #0f172a !important; }
+.pill-sky    { background-color: #60a5fa !important; border: 2px solid #1e293b !important; color: #0f172a !important; }
+.pill-pink   { background-color: #f472b6 !important; border: 2px solid #1e293b !important; color: #0f172a !important; }
+.pill-amber  { background-color: #fbbf24 !important; border: 2px solid #1e293b !important; color: #0f172a !important; }
+.pill-purple { background-color: #c084fc !important; border: 2px solid #1e293b !important; color: #0f172a !important; }
+
+/* Table styling for Weekly Schedule */
+#table-weekly-schedule {
+  table-layout: fixed !important;
+  width: 100% !important;
+  border: 2px solid #1e293b !important;
+  border-collapse: collapse !important;
+  background-color: #ffffff;
+}
+#table-weekly-schedule thead tr {
+  border-bottom: 2px solid #1e293b !important;
+}
+#table-weekly-schedule th {
+  background-color: #f5eedc !important;
+  border-bottom: 2px solid #1e293b !important;
+  border-right: 1.5px solid #1e293b !important;
+  color: #1e293b !important;
+  font-weight: 800 !important;
+  padding: 6px 2px !important;
+  font-size: 11px !important;
+  text-align: center !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#table-weekly-schedule th:first-child {
+  width: 52px !important;
+  min-width: 48px !important;
+}
+#table-weekly-schedule th.cal-day-th {
+  width: calc((100% - 52px) / 7) !important;
+}
+#table-weekly-schedule td {
+  border-bottom: 1.5px solid #1e293b !important;
+  border-right: 1.5px solid #1e293b !important;
+}
+#table-weekly-schedule tr:last-child td {
+  border-bottom: none !important;
+}
+#table-weekly-schedule td:last-child {
+  border-right: none !important;
+}
+.cal-time-cell {
+  width: 52px !important;
+  min-width: 48px !important;
+  background-color: #f9f6ef !important;
+  color: #1e293b !important;
+  font-weight: 800 !important;
+  font-size: 10px !important;
+  padding: 2px !important;
+  text-align: center !important;
+  border-right: 2px solid #1e293b !important;
+}
+
+/* Kanban Cards in Paper Style */
+.clean-task-card {
+  background-color: #ffffff !important;
+  border: 2px solid #1e293b !important;
+  border-radius: 14px !important;
+  box-shadow: 2px 2px 0px #1e293b !important;
+  transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+}
+.clean-task-card:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 3px 3px 0px #1e293b !important;
+}
+
+/* Paper buttons */
+.paper-btn {
+  border: 2px solid #1e293b !important;
+  box-shadow: 1.5px 1.5px 0px #1e293b !important;
+  font-weight: 800 !important;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+.paper-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 2.5px 2.5px 0px #1e293b !important;
+}
+.paper-btn:active {
+  transform: translateY(1px);
+  box-shadow: 0px 0px 0px #1e293b !important;
+}
+
+/* Universal Paper Overrides for Cards, Modals and Inputs */
+.bg-white:not(.paper-exempt) {
+  border: 2px solid #1e293b;
+  box-shadow: 2px 2px 0px #1e293b;
+}
+
+/* Modals */
+.modal-card-paper {
+  background-color: #fffefb !important;
+  border: 2.5px solid #1e293b !important;
+  border-radius: 20px !important;
+  box-shadow: 5px 5px 0px #1e293b !important;
+}
+
+/* ============================================================
+ * HIGH-CONTRAST DARK MODE (BẢO ĐẢM TƯƠNG PHẢN NỀN VÀ CHỮ CỰC RÕ RÀNG)
+ * ============================================================ */
+html.dark body {
+  background-color: #0b1120 !important;
+  background-image: radial-gradient(#273449 1.5px, transparent 1.5px) !important;
+  color: #ffffff !important;
+}
+
+/* Hộp thanh điều hướng trên cùng trong Dark Mode */
+html.dark .paper-capsule-bar {
+  background-color: #111827 !important;
+  border: 2.5px solid #cbd5e1 !important;
+  box-shadow: 3.5px 3.5px 0px #020617 !important;
+}
+
+/* Logo MYLIFE trong Dark Mode: Đỏ tươi viền trắng nổi bật */
+html.dark .paper-logo-btn {
+  background-color: #ef4444 !important;
+  border: 2px solid #ffffff !important;
+  color: #ffffff !important;
+  box-shadow: 2.5px 2.5px 0px #000000 !important;
+}
+
+/* Các tab chưa chọn trong Dark Mode: Nền slate-800, VIỀN TRẮNG BẠC SÁNG VÀ CHỮ TRẮNG TINH */
+html.dark .paper-nav-pill,
+html.dark .paper-nav-btn {
+  background-color: #1e293b !important;
+  border: 2px solid #cbd5e1 !important;
+  color: #ffffff !important;
+  box-shadow: 2px 2px 0px #000000 !important;
+}
+html.dark .paper-nav-pill:hover,
+html.dark .paper-nav-btn:hover {
+  background-color: #334155 !important;
+  border-color: #facc15 !important;
+  color: #facc15 !important;
+}
+
+/* Tab ĐANG CHỌN trong Dark Mode: NỀN VÀNG RỰC RỠ + CHỮ ĐEN ĐẬM + VIỀN TRẮNG (TƯƠNG PHẢN TUYỆT ĐỐI) */
+html.dark .paper-nav-pill.active,
+html.dark .paper-nav-btn.active {
+  background-color: #facc15 !important;
+  color: #000000 !important;
+  border: 2px solid #ffffff !important;
+  font-weight: 900 !important;
+  box-shadow: 2.5px 2.5px 0px #000000 !important;
+}
+html.dark .paper-nav-pill.active i,
+html.dark .paper-nav-btn.active i {
+  color: #000000 !important;
+}
+
+/* Ô tìm kiếm trong Dark Mode */
+html.dark .paper-search-input {
+  background-color: #1e293b !important;
+  border: 2px solid #cbd5e1 !important;
+  color: #ffffff !important;
+  box-shadow: 1.5px 1.5px 0px #000000 !important;
+}
+html.dark .paper-search-input::placeholder {
+  color: #94a3b8 !important;
+}
+html.dark .paper-search-input:focus {
+  border-color: #facc15 !important;
+  background-color: #0f172a !important;
+}
+
+/* Nút Trợ lý AI trong Dark Mode: Xanh ngọc nổi bật viền trắng */
+html.dark .paper-ai-btn {
+  background-color: #10b981 !important;
+  border: 2px solid #ffffff !important;
+  color: #ffffff !important;
+  box-shadow: 2.5px 2.5px 0px #000000 !important;
+}
+
+/* Avatar AD trong Dark Mode */
+html.dark .paper-avatar-box {
+  background-color: #1e293b !important;
+  border: 2px solid #cbd5e1 !important;
+  color: #ffffff !important;
+  box-shadow: 2px 2px 0px #000000 !important;
+}
+html.dark .paper-avatar-box span {
+  color: #ffffff !important;
+}
+html.dark .paper-avatar-box .avatar-inner {
+  border: 1.5px solid #ffffff !important;
+}
+
+/* Nút tiện ích trong Dark Mode */
+html.dark .paper-util-btn {
+  background-color: #1e293b !important;
+  border: 2px solid #cbd5e1 !important;
+  color: #ffffff !important;
+  box-shadow: 1.5px 1.5px 0px #000000 !important;
+}
+html.dark .paper-util-btn:hover {
+  background-color: #334155 !important;
+  border-color: #facc15 !important;
+  color: #facc15 !important;
+}
+
+/* Toàn bộ Card & Hộp trong Dark Mode: Tương phản cao, chữ trắng rõ */
+html.dark .paper-box {
+  background-color: #151e30 !important;
+  border: 2px solid #475569 !important;
+  box-shadow: 3px 3px 0px #020617 !important;
+}
+html.dark .paper-card,
+html.dark .clean-task-card,
+html.dark .bg-white:not(.paper-exempt) {
+  background-color: #151e30 !important;
+  border: 2px solid #475569 !important;
+  box-shadow: 2px 2px 0px #020617 !important;
+  color: #ffffff !important;
+}
+
+/* Các container giấy màu kem / retro trong Dark Mode */
+html.dark .bg-\[\#fffefb\],
+html.dark .bg-\[\#f7f4ea\],
+html.dark .bg-\[\#fbf9f3\],
+html.dark .bg-\[\#f5eedc\],
+html.dark .bg-\[\#f9f6ef\],
+html.dark .bg-\[\#f3efe6\] {
+  background-color: #151e30 !important;
+  border-color: #475569 !important;
+  color: #ffffff !important;
+}
+
+html.dark .bg-\[\#fbf9f3\] {
+  background-color: #0f172a !important;
+  border-color: #475569 !important;
+}
+
+/* Modal paper containers */
+html.dark .modal-card-paper {
+  background-color: #151e30 !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: 5px 5px 0px #020617 !important;
+  color: #ffffff !important;
+}
+
+/* Dropdowns & search results in Dark Mode */
+html.dark #global-search-dropdown,
+html.dark #dropdown-noti {
+  background-color: #151e30 !important;
+  border-color: #cbd5e1 !important;
+  color: #ffffff !important;
+}
+
+/* Các text slate thông thường trong Dark Mode */
+html.dark .text-slate-900,
+html.dark .text-slate-800 {
+  color: #ffffff !important;
+}
+html.dark .text-slate-700,
+html.dark .text-slate-600 {
+  color: #e2e8f0 !important;
+}
+html.dark .text-slate-500,
+html.dark .text-slate-400 {
+  color: #cbd5e1 !important;
+}
+
+/* ĐẶC BIỆT: Bảo vệ các huy hiệu / thẻ màu sáng để luôn giữ CHỮ ĐEN ĐẬM NÉT (Không bị biến thành chữ trắng mờ) */
+html.dark .bg-amber-300,
+html.dark .bg-amber-400,
+html.dark .bg-yellow-300,
+html.dark .bg-yellow-400,
+html.dark .bg-teal-300,
+html.dark .bg-teal-400,
+html.dark .bg-emerald-300,
+html.dark .cal-pill,
+html.dark .pill-mint,
+html.dark .pill-sky,
+html.dark .pill-pink,
+html.dark .pill-amber,
+html.dark .pill-purple,
+html.dark #badge-count-todo,
+html.dark #badge-count-doing,
+html.dark .paper-nav-pill.active,
+html.dark .paper-nav-btn.active,
+html.dark .ai-msg-user {
+  color: #000000 !important;
+}
+
+html.dark .cal-pill *,
+html.dark .pill-mint *,
+html.dark .pill-sky *,
+html.dark .pill-pink *,
+html.dark .pill-amber *,
+html.dark .pill-purple *,
+html.dark .paper-nav-pill.active *,
+html.dark .paper-nav-btn.active *,
+html.dark .ai-msg-user *,
+html.dark .bg-amber-400 *,
+html.dark .bg-teal-400 * {
+  color: #000000 !important;
+}
+
+/* Nền Pastel & Text tương phản cao trong Dark Mode */
+html.dark .bg-amber-50,
+html.dark .bg-amber-50\/80,
+html.dark .bg-amber-100 {
+  background-color: #2e1c07 !important;
+  border-color: #78350f !important;
+}
+html.dark .text-amber-900,
+html.dark .text-amber-950,
+html.dark .text-amber-800 {
+  color: #fde047 !important;
+}
+html.dark .text-amber-700,
+html.dark .text-amber-600 {
+  color: #fef08a !important;
+}
+
+html.dark .bg-blue-50,
+html.dark .bg-blue-100 {
+  background-color: #172554 !important;
+  border-color: #1e3a8a !important;
+}
+html.dark .text-blue-600,
+html.dark .text-blue-700,
+html.dark .text-blue-800,
+html.dark .text-blue-900 {
+  color: #93c5fd !important;
+}
+
+html.dark .bg-indigo-50,
+html.dark .bg-indigo-50\/70,
+html.dark .bg-indigo-50\/80,
+html.dark .bg-indigo-100 {
+  background-color: #1e1b4b !important;
+  border-color: #312e81 !important;
+}
+html.dark .text-indigo-600,
+html.dark .text-indigo-700,
+html.dark .text-indigo-800,
+html.dark .text-indigo-900 {
+  color: #a5b4fc !important;
+}
+
+html.dark .bg-emerald-50,
+html.dark .bg-emerald-100 {
+  background-color: #064e3b !important;
+  border-color: #047857 !important;
+}
+html.dark .text-emerald-600,
+html.dark .text-emerald-700,
+html.dark .text-emerald-800,
+html.dark .text-emerald-900 {
+  color: #6ee7b7 !important;
+}
+
+html.dark .bg-rose-50,
+html.dark .bg-rose-100 {
+  background-color: #4c0519 !important;
+  border-color: #881337 !important;
+}
+html.dark .text-rose-600,
+html.dark .text-rose-700,
+html.dark .text-rose-800,
+html.dark .text-rose-900 {
+  color: #fca5a5 !important;
+}
+
+html.dark .bg-sky-50,
+html.dark .bg-sky-100 {
+  background-color: #0c4a6e !important;
+  border-color: #0369a1 !important;
+}
+html.dark .text-sky-600,
+html.dark .text-sky-700,
+html.dark .text-sky-800,
+html.dark .text-sky-900 {
+  color: #7dd3fc !important;
+}
+
+/* Nền Slate & Border trong Dark Mode */
+html.dark .bg-slate-50,
+html.dark .bg-slate-50\/80,
+html.dark .bg-slate-50\/50,
+html.dark .bg-slate-100,
+html.dark .bg-slate-100\/90,
+html.dark .bg-slate-100\/70,
+html.dark .bg-slate-200 {
+  background-color: #0f172a !important;
+  border-color: #334155 !important;
+}
+
+html.dark .border-slate-100,
+html.dark .border-slate-200,
+html.dark .border-slate-200\/80,
+html.dark .border-slate-200\/90,
+html.dark .border-slate-300 {
+  border-color: #334155 !important;
+}
+
+/* Tiêu đề & Chân bảng biểu trong Dark Mode */
+html.dark table thead tr,
+html.dark table tfoot tr {
+  background-color: #0f172a !important;
+  border-color: #334155 !important;
+  color: #f1f5f9 !important;
+}
+html.dark table thead th,
+html.dark table tfoot td,
+html.dark table tfoot th {
+  color: #cbd5e1 !important;
+}
+html.dark table tbody tr {
+  border-color: #1e293b !important;
+}
+html.dark table tbody tr:hover {
+  background-color: #1e293b !important;
+}
+
+/* Ngăn ngừa vệt sáng lóa khi hover trong Dark Mode */
+html.dark .hover\:bg-slate-50:hover,
+html.dark .hover\:bg-slate-100:hover,
+html.dark .hover\:bg-slate-200:hover,
+html.dark .hover\:bg-white:hover,
+html.dark .hover\:bg-white\/60:hover {
+  background-color: #334155 !important;
+}
+
+/* Select & Option chuẩn tương thích mọi trình duyệt */
+select option {
+  background-color: #ffffff;
+  color: #0f172a;
+}
+html.dark select,
+html.dark select option {
+  background-color: #1e293b !important;
+  color: #ffffff !important;
+}
+html.dark select option:checked,
+html.dark select option:hover {
+  background-color: #2563eb !important;
+  color: #ffffff !important;
+}
+
+/* Inputs & Textareas trong Dark Mode */
+html.dark input:not([type="checkbox"]):not([type="radio"]),
+html.dark textarea {
+  background-color: #0f172a !important;
+  color: #ffffff !important;
+  border-color: #475569 !important;
+}
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: #94a3b8 !important;
+}
+html.dark input:focus,
+html.dark textarea:focus {
+  background-color: #151e30 !important;
+  border-color: #facc15 !important;
+}
+
+/* Nút thêm việc trong Kanban Board */
+html.dark #btn-add-card-todo,
+html.dark #btn-add-card-doing {
+  background-color: #151e30 !important;
+  border-color: #475569 !important;
+  color: #cbd5e1 !important;
+}
+html.dark #btn-add-card-todo:hover,
+html.dark #btn-add-card-doing:hover {
+  background-color: #1e293b !important;
+  border-color: #cbd5e1 !important;
+  color: #ffffff !important;
+}
+
+/* Đồng hồ đếm ngược */
+html.dark #countdown-timer {
+  background-color: #0f172a !important;
+  color: #fde047 !important;
+  border-color: #78350f !important;
+}
+
+/* Bảng Lịch Tuần trong Dark Mode */
+html.dark #table-weekly-schedule {
+  border: 2px solid #64748b !important;
+  background-color: #151e30 !important;
+}
+html.dark #table-weekly-schedule th,
+html.dark #table-weekly-schedule th * {
+  background-color: #1e293b !important;
+  border-color: #64748b !important;
+  color: #ffffff !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+html.dark #table-weekly-schedule th:first-child {
+  width: 52px !important;
+  min-width: 48px !important;
+}
+html.dark #table-weekly-schedule th.cal-day-th {
+  width: calc((100% - 52px) / 7) !important;
+}
+html.dark #table-weekly-schedule td {
+  border-color: #334155 !important;
+}
+html.dark .cal-time-cell {
+  background-color: #0f172a !important;
+  border-color: #64748b !important;
+  color: #cbd5e1 !important;
+}
+
+/* Cụm điều khiển Lịch Tuần trong Dark Mode (Độ tương phản cao, chuẩn nét) */
+html.dark #calendar-week-label {
+  color: #f8fafc !important;
+}
+html.dark #calendar-week-label:hover {
+  color: #60a5fa !important;
+}
+
+html.dark #btn-cal-prev-week,
+html.dark #btn-cal-next-week {
+  background-color: #1e293b !important;
+  border-color: #64748b !important;
+  color: #f8fafc !important;
+  box-shadow: 1px 1px 0px #475569 !important;
+}
+html.dark #btn-cal-prev-week:hover,
+html.dark #btn-cal-next-week:hover {
+  background-color: #334155 !important;
+}
+
+html.dark #btn-cal-today {
+  background-color: #eab308 !important;
+  color: #0f172a !important;
+  border-color: #fef08a !important;
+  box-shadow: 1px 1px 0px #475569 !important;
+}
+
+html.dark #cal-jump-date-wrap {
+  background-color: #1e293b !important;
+  border-color: #64748b !important;
+  box-shadow: 1.5px 1.5px 0px #475569 !important;
+}
+html.dark #cal-jump-date-wrap i {
+  color: #cbd5e1 !important;
+}
+html.dark #cal-jump-date-picker {
+  color: #f8fafc !important;
+  color-scheme: dark;
+}
+html.dark #cal-jump-date-picker::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  cursor: pointer;
+}
+
+html.dark #cal-working-hours {
+  background-color: #1e293b !important;
+  border-color: #64748b !important;
+  color: #f8fafc !important;
+  box-shadow: 1.5px 1.5px 0px #475569 !important;
+}
+html.dark #cal-working-hours option {
+  background-color: #1e293b !important;
+  color: #f8fafc !important;
+}
+
+
+

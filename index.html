@@ -1,0 +1,2865 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MyLife - Trung Tâm Năng Suất</title>
+  <!-- Google Fonts: Nunito (chữ bo tròn đậm nét giống mẫu) + Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="style.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Nunito"', '"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+            },
+            surface: {
+              base: '#F4F6F8',
+              card: '#FFFFFF',
+            }
+          },
+          boxShadow: {
+            'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 2px 6px -1px rgba(0, 0, 0, 0.02)',
+            'card-hover': '0 10px 25px -3px rgba(0, 0, 0, 0.08), 0 4px 10px -2px rgba(0, 0, 0, 0.03)',
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-[#f7f4ea] text-slate-800 font-sans antialiased selection:bg-amber-400 selection:text-slate-900 min-h-screen flex flex-col">
+
+  <!-- ==================== SIDEBAR TRÁI (ẨN TRONG GIAO DIỆN PHONG CÁCH GIẤY MỚI) ==================== -->
+  <aside class="hidden" id="legacy-sidebar">
+    <div id="logo-home-legacy"></div>
+  </aside>
+
+  <!-- ==================== FLOATING PAPER CAPSULE HEADER (CHUẨN 100% THEO ẢNH MẪU 2) ==================== -->
+  <div class="w-full max-w-[1440px] mx-auto px-3 sm:px-6 pt-3 pb-1 sticky top-2 z-40">
+    <header class="paper-capsule-bar px-3 sm:px-4 py-2.5 flex items-center justify-between gap-3 flex-wrap">
+      
+      <!-- CỤM TRÁI: LOGO MYLIFE + CÁC TAB ĐIỀU HƯỚNG (TỔNG QUAN LÊN ĐẦU, BỎ KANBAN) -->
+      <div class="flex items-center gap-2 sm:gap-2.5 flex-wrap">
+        <!-- Nút MYLIFE chuẩn ảnh (Hình học ▲●■ + chữ MYLIFE) -->
+        <button id="logo-home" class="paper-logo-btn active:scale-95 transition-all" title="Về trang chủ">
+          <i class="fa-solid fa-shapes text-sm"></i>
+          <span>MYLIFE</span>
+        </button>
+
+        <!-- Thanh Tabs Navigation chuẩn thứ tự mới -->
+        <nav class="flex items-center gap-1.5 sm:gap-2 flex-wrap" id="nav-menu">
+          <!-- 1. TỔNG QUAN (ĐƯỢC ĐƯA LÊN ĐẦU TIÊN THEO YÊU CẦU) -->
+          <button data-view="overview" class="nav-item paper-nav-btn active" title="Tổng quan hệ thống">
+            <i class="fa-solid fa-chart-pie text-xs text-blue-500"></i>
+            <span data-i18n="nav_overview">Tổng quan</span>
+          </button>
+
+          <!-- 2. LỊCH TUẦN -->
+          <button data-view="tasks" class="nav-item paper-nav-btn" title="Lịch biểu tuần & Công việc">
+            <i class="fa-solid fa-calendar-days text-xs text-amber-500"></i>
+            <span data-i18n="nav_tasks">Lịch tuần</span>
+          </button>
+
+          <!-- 3. SỨC KHỎE -->
+          <button data-view="health" class="nav-item paper-nav-btn" title="Theo dõi sức khỏe">
+            <i class="fa-solid fa-heart-pulse text-xs text-rose-500"></i>
+            <span data-i18n="nav_health">Sức khỏe</span>
+          </button>
+
+          <!-- 4. TÀI CHÍNH -->
+          <button data-view="finance" class="nav-item paper-nav-btn" title="Quản lý tài chính">
+            <i class="fa-solid fa-wallet text-xs text-emerald-500"></i>
+            <span id="finance-nav-label" data-i18n="nav_finance">Tài chính</span>
+          </button>
+
+          <!-- 5. CÀI ĐẶT -->
+          <button data-view="settings" class="nav-item paper-nav-btn" title="Cài đặt hệ thống">
+            <i class="fa-solid fa-gear text-xs text-slate-500"></i>
+            <span data-i18n="nav_settings">Cài đặt</span>
+          </button>
+
+          <!-- 6. TRỢ LÝ AI (MỤC LỤC) -->
+          <button id="btn-nav-ai-chat" type="button" class="nav-item paper-nav-btn hover:bg-emerald-50 dark:hover:bg-slate-800" title="Mở Trợ lý Gemini AI">
+            <i class="fa-solid fa-wand-magic-sparkles text-xs text-emerald-600"></i>
+            <span data-i18n="nav_ai">Trợ lý AI</span>
+          </button>
+        </nav>
+      </div>
+
+      <!-- CỤM PHẢI: TÌM KIẾM + AVATAR PROFILE + TIỆN ÍCH -->
+      <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
+        
+        <!-- Ô tìm kiếm bo góc chuẩn ảnh 2 -->
+        <div class="relative">
+          <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+          <input type="text" id="global-search" placeholder="Tìm kiếm công việc..." 
+            class="paper-search-input w-36 sm:w-48 lg:w-56">
+          <button id="btn-clear-global-search" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs p-1" title="Xóa tìm kiếm">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+
+          <!-- Omnibox Search Dropdown -->
+          <div id="global-search-dropdown" class="hidden absolute right-0 top-full mt-2 w-[320px] sm:w-[400px] bg-white rounded-2xl shadow-2xl border-2 border-slate-900 z-50 overflow-hidden max-h-[480px] flex flex-col animate-in"></div>
+        </div>
+
+        <!-- Thẻ đại diện cá nhân & Đăng nhập tài khoản (Quản lý đa tài khoản lên tới 20 tài khoản) -->
+        <div class="relative" id="account-dropdown-wrapper">
+          <button id="btn-header-account-profile" type="button" class="paper-avatar-box cursor-pointer active:scale-95 transition-all flex items-center" title="Quản lý & Chuyển đổi tài khoản (Hỗ trợ tối đa 20 tài khoản)">
+            <div class="avatar-inner" id="header-avatar-initials">AD</div>
+            <span class="text-xs font-black text-slate-900 dark:text-white" id="header-avatar-name">Anh Dũng</span>
+            <i class="fa-solid fa-chevron-down text-[9px] text-slate-400 group-hover:text-slate-600 transition-transform ml-0.5" id="icon-account-chevron"></i>
+          </button>
+
+          <!-- Dropdown Quản Lý & Chuyển Đổi Tài Khoản (Retro Paper) -->
+          <div id="dropdown-account-manager" class="hidden absolute right-0 top-full mt-2 w-80 sm:w-96 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border-2 border-slate-900 p-4 z-50 animate-in font-['Nunito']">
+            <!-- Header Dropdown -->
+            <div class="flex items-center justify-between pb-2.5 border-b-2 border-slate-900 dark:border-slate-700 mb-3">
+              <div class="flex items-center gap-2">
+                <div class="w-7 h-7 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-xs border border-indigo-200 dark:border-indigo-800">
+                  <i class="fa-solid fa-users-gear"></i>
+                </div>
+                <div>
+                  <h4 class="font-extrabold text-xs text-slate-900 dark:text-white" data-i18n="acc_manager_title">Quản Lý Tài Khoản</h4>
+                  <span id="account-count-badge" class="text-[10px] text-slate-400 font-semibold block">Đã lưu: 3/20 tài khoản</span>
+                </div>
+              </div>
+              <button type="button" id="btn-close-account-dropdown" class="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 text-xs p-1" title="Đóng">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+
+            <!-- Active Account Card -->
+            <div class="p-3 rounded-xl bg-amber-50 dark:bg-slate-800 border-2 border-slate-900 dark:border-slate-700 mb-3 shadow-[1.5px_1.5px_0px_#1e293b]">
+              <div class="text-[9px] font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 mb-2">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span data-i18n="acc_currently_active">Đang sử dụng</span>
+              </div>
+              <div class="flex items-center gap-3">
+                <div id="active-acc-avatar" class="w-10 h-10 rounded-xl bg-[#f25c54] text-white border-2 border-slate-900 font-black text-sm flex items-center justify-center shadow-[1px_1px_0px_#1e293b] shrink-0">AD</div>
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    <h5 id="active-acc-name" class="font-black text-xs text-slate-900 dark:text-white truncate">Anh Dũng</h5>
+                    <span id="active-acc-role" class="px-1.5 py-0.5 rounded-md bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 text-[9px] font-extrabold border border-emerald-400/40">Chủ sở hữu</span>
+                  </div>
+                  <p id="active-acc-email" class="text-[11px] text-slate-500 dark:text-slate-400 truncate mt-0.5">anhdung.workspace@mylife.vn</p>
+                  <button type="button" id="btn-open-change-pwd-modal" class="text-[10px] text-teal-600 dark:text-teal-400 font-extrabold hover:underline flex items-center gap-1 mt-1 transition-colors">
+                    <i class="fa-solid fa-key text-[9px]"></i>
+                    <span data-i18n="acc_btn_change_pwd">Đổi mật khẩu / PIN</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Danh sách tài khoản khác có thể chuyển đổi (Cuộn tối đa 20 tài khoản) -->
+            <div class="mb-3">
+              <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block mb-2" data-i18n="acc_other_accounts">Chuyển sang tài khoản khác:</span>
+              <div id="accounts-switch-list" class="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                <!-- JS rendered other accounts -->
+              </div>
+            </div>
+
+            <!-- Footer Actions -->
+            <div class="pt-2.5 border-t border-slate-100 dark:border-slate-800 space-y-2">
+              <button type="button" id="btn-open-google-login" class="w-full py-2 px-3 rounded-xl bg-white hover:bg-slate-50 text-slate-800 font-extrabold text-xs border-2 border-slate-900 shadow-[1.5px_1.5px_0px_#1e293b] flex items-center justify-center gap-2 active:scale-95 transition-all">
+                <svg class="w-4 h-4" viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                </svg>
+                <span data-i18n="google_btn_login_bar">Đăng nhập với Google</span>
+              </button>
+              <button type="button" id="btn-open-add-account-modal" class="w-full py-2 px-3 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-900 font-black text-xs border-2 border-slate-900 shadow-[1.5px_1.5px_0px_#1e293b] flex items-center justify-center gap-1.5 active:scale-95 transition-all">
+                <i class="fa-solid fa-user-plus text-[11px]"></i>
+                <span data-i18n="acc_btn_add_another">+ Đăng Nhập / Thêm Tài Khoản Mới</span>
+              </button>
+              <button type="button" id="btn-lock-account-session" class="w-full py-1.5 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-extrabold text-[11px] border border-slate-900/30 dark:border-slate-700 flex items-center justify-center gap-1.5 active:scale-95 transition-all">
+                <i class="fa-solid fa-lock text-[10px] text-amber-500"></i>
+                <span data-i18n="acc_btn_lock_session">Khóa Phiên / Đăng Xuất</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ĐỒNG HỒ & NGÀY HỆ THỐNG THỜI GIAN THỰC (ĐỒNG BỘ 100%) -->
+        <div id="header-realtime-clock-pill" class="flex items-center gap-2 px-3 py-1.5 rounded-xl border-2 border-slate-900 bg-amber-50 dark:bg-slate-800 text-slate-900 dark:text-white shadow-[1.5px_1.5px_0px_#1e293b] select-none" title="Thời gian hệ thống thời gian thực">
+          <i class="fa-regular fa-clock text-amber-500 animate-pulse text-xs"></i>
+          <span id="realtime-clock" class="font-mono font-black text-xs tracking-wide">00:00:00</span>
+          <span class="text-slate-300 dark:text-slate-600 font-bold text-xs">|</span>
+          <i class="fa-regular fa-calendar-days text-blue-500 text-xs"></i>
+          <span id="current-date-text" class="font-black text-[11px]">Chủ Nhật, 08/11/2026</span>
+        </div>
+
+        <!-- Các tiện ích: Thông báo, Giao diện tối/sáng, Đổi ngôn ngữ -->
+        <div class="flex items-center gap-1.5">
+          <!-- Notification Bell -->
+          <div class="relative">
+            <button id="btn-notifications" class="paper-util-btn" title="Thông báo hệ thống">
+              <i class="fa-regular fa-bell text-xs"></i>
+              <span id="noti-badge-dot" class="absolute top-1 right-1 w-2 h-2 rounded-full bg-rose-500 ring-1 ring-white"></span>
+            </button>
+            <div id="dropdown-noti" class="hidden absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border-2 border-slate-900 p-4 z-50 animate-in">
+              <div class="flex items-center justify-between pb-2.5 border-b-2 border-slate-900 mb-2">
+                <div class="flex items-center gap-2">
+                  <span class="font-bold text-sm text-slate-900" data-i18n="noti_title">Trung Tâm Thông Báo</span>
+                  <span id="noti-unread-count" class="px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 text-[10px] font-bold border border-rose-300">0 mới</span>
+                </div>
+                <button class="text-[11px] text-blue-600 hover:underline font-semibold" id="btn-mark-read" data-i18n="noti_mark_read">Đánh dấu đã đọc</button>
+              </div>
+              <div class="space-y-2 text-xs max-h-84 overflow-y-auto pr-1" id="notification-items-list"></div>
+            </div>
+          </div>
+
+          <!-- Dark/Light Mode Switcher -->
+          <button id="btn-header-theme-toggle" class="paper-util-btn" title="Chuyển đổi giao diện Sáng / Tối">
+            <i class="fa-solid fa-moon text-xs" id="header-theme-icon"></i>
+          </button>
+
+          <!-- Language Switcher -->
+          <button id="btn-header-lang-toggle" class="paper-util-btn text-[11px] font-black" title="Tiếng Việt / English">
+            <span id="header-lang-code">VI</span>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Hidden nodes for helper elements to prevent JS null errors -->
+      <div class="hidden">
+        <span id="dynamic-greeting"></span>
+        <button id="btn-open-guide"></button>
+        <button id="btn-calendar"></button>
+      </div>
+
+    </header>
+  </div>
+
+  <!-- ==================== NỘI DUNG CHÍNH (MAIN DASHBOARD) ==================== -->
+  <main class="flex-1 flex flex-col min-h-screen overflow-x-hidden max-w-[1440px] w-full mx-auto">
+
+    <!-- ==================== VIEW 1: TỔNG QUAN DASHBOARD ==================== -->
+    <div id="view-overview" class="p-6 md:p-8 space-y-6 flex-1">
+      
+      <!-- GRID HỆ THỐNG WIDGET -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-6">
+
+        <!-- ================= CARD 1: TÀI CHÍNH CÁ NHÂN (Cols: 12 -> 6) ================= -->
+        <div class="lg:col-span-6 bg-white rounded-2xl p-6 shadow-soft hover:shadow-card-hover transition-all duration-300 border border-slate-100 flex flex-col justify-between relative overflow-hidden">
+
+          <!-- HEADER CARD – luôn hiển thị dù chưa đăng nhập -->
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-3 cursor-pointer group" id="btn-goto-finance">
+              <div class="card-icon-badge w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-50 to-teal-100/80 text-emerald-600 border border-emerald-200/60 flex items-center justify-center font-bold text-lg shadow-xs">
+                <i class="fa-solid fa-wallet"></i>
+              </div>
+              <div>
+                <h3 class="font-bold text-slate-900 text-base flex items-center gap-2 group-hover:text-emerald-600 transition-colors">
+                  <span data-i18n="card_finance_title">Tài chính cá nhân</span>
+                  <button type="button" class="btn-card-hint text-slate-300 hover:text-blue-600 transition-colors" data-hint="Quản lý dòng tiền, số dư VND, phân loại thu chi và theo dõi báo cáo 12 tháng. Mật khẩu mặc định: 1234." title="Hướng dẫn mục này">
+                    <i class="fa-regular fa-circle-question text-xs"></i>
+                  </button>
+                  <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400 group-hover:text-emerald-600 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"></i>
+                </h3>
+                <p class="text-xs text-slate-400" data-i18n="card_finance_sub">Ngân sách & chi tiêu tháng</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <button id="btn-view-finance-detail" class="px-2.5 py-1.5 text-xs font-medium rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition-all">
+                <span data-i18n="btn_manage">Quản lý</span>
+              </button>
+              <button id="btn-add-transaction" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 active:scale-95 transition-all flex items-center gap-1.5 shadow-sm">
+                <i class="fa-solid fa-plus"></i>
+                <span data-i18n="btn_record">Ghi chép</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- NỘI DUNG BỊ BLUR KHI CHƯA ĐĂNG NHẬP -->
+          <div id="overview-finance-body" class="flex flex-col gap-4 flex-1">
+
+            <!-- Tổng số dư -->
+            <div class="bg-gradient-to-r from-slate-900 to-slate-800 rounded-2xl p-5 text-white shadow-md relative overflow-hidden">
+              <div class="absolute -right-6 -bottom-6 text-white/5 text-8xl font-black pointer-events-none">₫</div>
+              <p class="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1" data-i18n="label_total_balance">Tổng Số Dư Khả Dụng</p>
+              <div class="flex items-baseline gap-2">
+                <span id="finance-balance" class="text-3xl font-extrabold tracking-tight">0</span>
+                <span class="text-sm text-emerald-400 font-bold">VND</span>
+              </div>
+              <div class="mt-4 pt-3 border-t border-white/10 flex items-center justify-between text-xs">
+                <span class="text-slate-300 flex items-center gap-1.5">
+                  <i class="fa-solid fa-arrow-trend-up text-emerald-400"></i> <span data-i18n="label_income">Thu nhập:</span> <b id="finance-income" class="text-white">0 ₫</b>
+                </span>
+                <span class="text-slate-300 flex items-center gap-1.5">
+                  <i class="fa-solid fa-arrow-trend-down text-rose-400"></i> <span data-i18n="label_spent">Đã chi:</span> <b id="finance-spent" class="text-white">0 ₫</b>
+                </span>
+              </div>
+            </div>
+
+            <!-- Tiến độ chi tiêu (Progress bar) -->
+            <div>
+              <div class="flex justify-between items-center text-xs mb-1.5">
+                <span class="font-semibold text-slate-700 flex items-center gap-1">
+                  <i class="fa-solid fa-gauge-high text-blue-500"></i> <span data-i18n="label_expense_ratio">Tỷ lệ chi tiêu / thu nhập</span>
+                </span>
+                <span id="finance-percent-label" class="font-bold text-blue-600">0%</span>
+              </div>
+              <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden p-0.5 border border-slate-200/50">
+                <div id="finance-progress-bar" class="bg-gradient-to-r from-emerald-500 via-blue-500 to-indigo-600 h-full rounded-full transition-all duration-700" style="width: 0%;"></div>
+              </div>
+              <p class="text-[11px] text-slate-400 mt-1.5 flex items-center justify-between">
+                <span id="finance-status-text">Chưa có giao dịch nào được ghi</span>
+                <span class="text-emerald-600 font-medium cursor-pointer hover:underline" id="link-open-finance" data-i18n="link_view_details">Xem chi tiết &rarr;</span>
+              </p>
+            </div>
+
+            <!-- Giao dịch gần đây (tóm tắt trên Overview) -->
+            <div class="mt-auto pt-3 border-t border-slate-100">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider" data-i18n="label_recent_trans">Giao dịch gần nhất</span>
+                <span class="text-[11px] text-blue-600 hover:underline cursor-pointer" id="btn-see-all-transactions" data-i18n="btn_view_all">Xem tất cả</span>
+              </div>
+              <div id="recent-transactions" class="space-y-1.5 text-xs"></div>
+            </div>
+
+          </div>
+
+          <!-- OVERLAY KHÓA NGAY TRONG CARD TỔNG QUAN -->
+          <div id="overview-finance-lock" class="hidden absolute inset-x-0 bottom-0 top-[68px] rounded-b-2xl flex flex-col items-center justify-center gap-3 z-10"
+               style="background: rgba(248,250,252,0.85); backdrop-filter: blur(6px);">
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center text-white text-xl shadow-xl">
+              <i class="fa-solid fa-lock"></i>
+            </div>
+            <div class="text-center px-4">
+              <p class="font-extrabold text-slate-900 text-sm" data-i18n="lock_title">Dữ liệu tài chính được bảo vệ</p>
+              <p class="text-xs text-slate-500 mt-0.5" data-i18n="lock_desc">Nhập mật khẩu để xem số dư & lịch sử chi tiêu</p>
+            </div>
+            <button id="btn-unlock-overview" class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md shadow-blue-500/25 active:scale-95 transition-all flex items-center gap-2">
+              <i class="fa-solid fa-unlock-keyhole"></i> <span data-i18n="btn_unlock_now">Mở khóa xem ngay</span>
+            </button>
+          </div>
+
+        </div>
+
+        <!-- ================= CARD 2: CÔNG VIỆC & ƯU TIÊN (Cols: 12 -> 6) ================= -->
+        <div class="lg:col-span-6 bg-white rounded-2xl p-6 shadow-soft hover:shadow-card-hover transition-all duration-300 border border-slate-100 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center gap-3">
+                <div class="card-icon-badge w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-50 to-blue-100/80 text-indigo-600 border border-indigo-200/60 flex items-center justify-center font-bold text-lg shadow-xs">
+                  <i class="fa-solid fa-list-check"></i>
+                </div>
+                <div>
+                  <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
+                    <span data-i18n="card_tasks_title">Công việc & Ưu tiên</span>
+                    <button type="button" class="btn-card-hint text-slate-300 hover:text-indigo-600 transition-colors" data-hint="Đặt hạn chót trong ngày, chọn độ ưu tiên và tích chọn hoàn thành. Bấm 'Quản lý' để vào bảng Kanban và tinh chỉnh chuyên sâu." title="Hướng dẫn mục này">
+                      <i class="fa-regular fa-circle-question text-xs"></i>
+                    </button>
+                  </h3>
+                  <p class="text-xs text-slate-400" data-i18n="card_tasks_sub">Quản lý mục tiêu & dự án hôm nay</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <button id="btn-goto-tasks" class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-indigo-200 text-indigo-600 hover:bg-indigo-50 active:scale-95 transition-all flex items-center gap-1.5" title="Mở trung tâm quản lý công việc chuyên sâu">
+                  <i class="fa-solid fa-layer-group"></i>
+                  <span data-i18n="btn_manage">Quản lý</span>
+                </button>
+                <button id="btn-show-add-task" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 active:scale-95 transition-all flex items-center gap-1.5 shadow-sm">
+                  <i class="fa-solid fa-plus"></i>
+                  <span data-i18n="btn_add_task_short">Thêm việc</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Đồng hồ đếm ngược Thời hạn (Countdown Timer) kèm nút Cài đặt giờ chốt -->
+            <div class="p-3.5 rounded-xl bg-amber-50/80 border border-amber-200/80 flex items-center justify-between mb-4">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-amber-500 text-white flex items-center justify-center font-bold text-xs animate-bounce">
+                  <i class="fa-solid fa-hourglass-half"></i>
+                </div>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <p class="text-xs font-bold text-amber-900" data-i18n="label_daily_deadline">Hạn chót mục tiêu ngày</p>
+                    <button id="btn-quick-config-deadline" class="text-[10px] text-amber-600 hover:text-amber-900 font-semibold flex items-center gap-1 hover:underline" title="Bấm để tùy chỉnh giờ chốt sổ">
+                      <i class="fa-solid fa-gear"></i> <span data-i18n="btn_customize">Tinh chỉnh</span>
+                    </button>
+                  </div>
+                  <p class="text-[11px] text-amber-700" id="daily-deadline-label">Đóng sổ công việc trước 22:00</p>
+                </div>
+              </div>
+              <div class="text-right">
+                <span id="countdown-timer" class="font-mono text-lg font-black text-amber-950 tracking-wider bg-white/80 px-2.5 py-1 rounded-lg border border-amber-300 shadow-inner">04:15:30</span>
+              </div>
+            </div>
+
+            <!-- Form thêm nhanh nhiệm vụ (Ẩn/Hiện) -->
+            <form id="task-form" class="hidden mb-4 p-3 bg-slate-50 rounded-xl border border-slate-200">
+              <div class="flex gap-2 mb-2">
+                <input type="text" id="task-input" placeholder="Nhập tên nhiệm vụ cần làm..." required 
+                  class="flex-1 bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-indigo-500">
+                <select id="task-priority" class="bg-white border border-slate-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none">
+                  <option value="high">Ưu tiên Cao</option>
+                  <option value="medium" selected>Trung bình</option>
+                  <option value="low">Thấp</option>
+                </select>
+              </div>
+              <div class="flex justify-end gap-2">
+                <button type="button" id="btn-cancel-task" class="px-3 py-1 text-xs text-slate-600 hover:bg-slate-200 rounded-md">Hủy</button>
+                <button type="submit" class="px-3 py-1 text-xs bg-indigo-600 text-white font-medium rounded-md hover:bg-indigo-700">Lưu</button>
+              </div>
+            </form>
+
+            <!-- Tab chuyển đổi 2 danh sách: To-do & In Progress (chuẩn Image 2) -->
+            <div class="flex items-center justify-between mb-3 bg-slate-100/90 p-1 rounded-xl">
+              <div class="flex items-center gap-1">
+                <button type="button" id="overview-tab-todo" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-white text-indigo-600 shadow-sm flex items-center gap-1.5">
+                  <span id="overview-label-todo" data-i18n="col_todo">Cần làm</span>
+                  <span id="overview-badge-todo" class="px-1.5 py-0.2 rounded-full bg-indigo-100 text-indigo-700 text-[10px] font-bold">0</span>
+                </button>
+                <button type="button" id="overview-tab-doing" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-600 hover:text-slate-900 flex items-center gap-1.5">
+                  <span id="overview-label-doing" data-i18n="col_doing">Đang làm</span>
+                  <span id="overview-badge-doing" class="px-1.5 py-0.2 rounded-full bg-blue-100 text-blue-700 text-[10px] font-bold">0</span>
+                </button>
+              </div>
+              <button type="button" id="btn-quick-add-overview" class="text-[11px] font-semibold text-indigo-600 hover:text-indigo-800 px-2 py-1 rounded-lg hover:bg-white/60 transition-colors flex items-center gap-1">
+                <i class="fa-solid fa-plus text-[10px]"></i> <span data-i18n="btn_add_card_short">Thêm thẻ</span>
+              </button>
+            </div>
+
+            <!-- Danh sách Nhiệm vụ Card Style (chuẩn Image 2) -->
+            <div class="space-y-2.5 max-h-64 overflow-y-auto pr-1" id="task-list">
+              <!-- JS rendered 2-list style cards -->
+            </div>
+
+            <!-- Nút Xem tất cả / Thu gọn tasks khi > 4 nhiệm vụ -->
+            <div id="task-expand-container" class="mt-2 text-center hidden">
+              <button id="btn-toggle-task-expand" class="text-xs text-indigo-600 hover:text-indigo-800 font-semibold py-1 px-3 rounded-xl bg-indigo-50/70 hover:bg-indigo-100 transition-all">
+                <span id="task-expand-btn-text" data-i18n="btn_view_all_tasks">Xem tất cả nhiệm vụ ↓</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+            <span id="task-completion-stats"><i class="fa-regular fa-circle-check text-emerald-500 mr-1"></i>Đã hoàn thành: 2/4</span>
+            <button id="btn-clear-completed" class="text-slate-400 hover:text-rose-500 transition-colors"><span data-i18n="btn_clean_done_tasks">Dọn dẹp việc đã xong</span></button>
+          </div>
+        </div>
+
+        <!-- ================= CARD 3: THEO DÕI SỨC KHỎE (BENTO BLOCK STYLE) ================= -->
+        <div class="lg:col-span-6 bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-800 rounded-3xl p-6 text-white shadow-soft hover:shadow-card-hover transition-all duration-300 border border-emerald-500/30 flex flex-col justify-between relative overflow-hidden group">
+          <div class="absolute -right-6 -bottom-6 text-white/10 text-9xl font-black pointer-events-none select-none">
+            <i class="fa-solid fa-person-walking"></i>
+          </div>
+
+          <div>
+            <!-- Header Row -->
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center gap-2.5 cursor-pointer" id="btn-goto-health-from-ov">
+                <div class="w-9 h-9 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white text-base shadow-xs">
+                  <i class="fa-solid fa-person-walking"></i>
+                </div>
+                <h3 class="font-bold text-white text-base tracking-wide flex items-center gap-2">
+                  <span data-i18n="card_health_title">Mục tiêu Sức Khỏe</span>
+                  <i class="fa-solid fa-arrow-up-right-from-square text-xs text-white/70 group-hover:text-white transition-colors"></i>
+                </h3>
+              </div>
+              <div class="flex items-center gap-2">
+                <button id="btn-ov-add-steps" class="bento-glass-btn px-3 py-1.5 text-xs flex items-center gap-1.5 shadow-sm" title="Thêm nhanh 500 bước">
+                  <i class="fa-solid fa-plus text-[10px]"></i>
+                  <span>500 bước</span>
+                </button>
+                <button id="btn-ov-open-health-detail" class="bento-glass-btn w-8 h-8 flex items-center justify-center text-xs" title="Mở trung tâm sức khỏe">
+                  <i class="fa-solid fa-arrow-right"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Big Number & Percent Badge -->
+            <div class="flex items-end justify-between my-3">
+              <div>
+                <div class="flex items-baseline gap-2">
+                  <span id="ov-health-steps" class="text-4xl sm:text-5xl font-black tracking-tight text-white">8.432</span>
+                  <span class="text-sm font-semibold text-emerald-100" id="ov-health-steps-target">/ 10.000 bước</span>
+                </div>
+              </div>
+              <span id="ov-health-steps-pct" class="text-sm font-extrabold px-3 py-1 rounded-xl bg-white/20 backdrop-blur-md border border-white/25 text-white shadow-xs">84%</span>
+            </div>
+
+            <!-- Sleek Glow Progress Bar -->
+            <div class="w-full bg-black/25 rounded-full h-3 p-0.5 overflow-hidden shadow-inner my-3">
+              <div id="ov-health-steps-bar" class="bg-white h-full rounded-full transition-all duration-700 shadow-sm" style="width: 84.3%;"></div>
+            </div>
+          </div>
+
+          <!-- Bottom Strip: 3 Bento Sub-Tiles (Calo, Nước, Giấc ngủ) -->
+          <div class="grid grid-cols-3 gap-2.5 mt-4 pt-2">
+            <!-- Sub-tile Calo -->
+            <div class="bento-sub-tile flex-1 justify-center">
+              <i class="fa-solid fa-fire text-amber-300 text-base"></i>
+              <div>
+                <span class="text-[10px] text-emerald-100/90 font-medium block leading-tight">Calo</span>
+                <span id="ov-health-calories" class="text-xs sm:text-sm font-black text-white">337 kcal</span>
+              </div>
+            </div>
+
+            <!-- Sub-tile Nước uống (Click to drink +250ml) -->
+            <div class="bento-sub-tile flex-1 justify-center cursor-pointer group/water" id="btn-ov-add-water" title="Bấm để uống nhanh +250ml">
+              <i class="fa-solid fa-glass-water text-cyan-200 text-base group-hover/water:scale-115 transition-transform animate-water-pulse"></i>
+              <div>
+                <span class="text-[10px] text-emerald-100/90 font-medium block leading-tight">Nước</span>
+                <span id="ov-health-water-ml" class="text-xs sm:text-sm font-black text-white">1.8 / 2.0L</span>
+              </div>
+            </div>
+
+            <!-- Sub-tile Giấc ngủ -->
+            <div class="bento-sub-tile flex-1 justify-center cursor-pointer" id="btn-ov-open-sleep" title="Xem chu kỳ giấc ngủ">
+              <i class="fa-solid fa-moon text-indigo-200 text-base"></i>
+              <div>
+                <span class="text-[10px] text-emerald-100/90 font-medium block leading-tight">Giấc ngủ</span>
+                <span id="ov-health-sleep-hours" class="text-xs sm:text-sm font-black text-white">0h 00m</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ================= BẢN TIN THỜI SỰ & ĐIỂM TIN YÊU THÍCH (Cols: 12 -> 6) ================= -->
+        <div class="lg:col-span-6 bg-slate-900 rounded-2xl p-6 text-white shadow-soft hover:shadow-card-hover transition-all duration-300 border border-slate-800 flex flex-col justify-between min-h-[280px]">
+          <div>
+            <!-- Header: Điểm Tin Thời Sự -->
+            <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+              <div class="flex items-center gap-3">
+                <div class="card-icon-badge w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600/30 to-indigo-500/30 border border-blue-400/30 text-blue-400 flex items-center justify-center text-base font-bold shadow-sm">
+                  <i class="fa-solid fa-newspaper"></i>
+                </div>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <h3 class="font-bold text-base tracking-wide text-white" data-i18n="card_news_title">Thời Sự Hôm Nay</h3>
+                    <span id="news-live-badge" class="inline-flex items-center gap-1 text-[10px] font-extrabold text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded-full border border-emerald-500/40">
+                      <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                      <span data-i18n="news_badge_live">Trực tiếp</span>
+                    </span>
+                  </div>
+                  <p class="text-xs text-slate-400" id="news-header-time-sub" data-i18n="news_live_sub">Tin tức chọn lọc theo chủ đề • Cập nhật thời gian thực</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <button id="btn-refresh-news" class="text-slate-400 hover:text-white text-xs p-2 rounded-xl hover:bg-slate-800 border border-transparent hover:border-slate-700 transition-all flex items-center gap-1 active:scale-95" title="Làm mới tin tức thời gian thực">
+                  <i class="fa-solid fa-rotate" id="icon-refresh-news"></i>
+                </button>
+                <button id="btn-open-news-settings" class="text-slate-400 hover:text-white text-xs p-2 rounded-xl hover:bg-slate-800 border border-transparent hover:border-slate-700 transition-all" title="Cài đặt chủ đề tin tức yêu thích">
+                  <i class="fa-solid fa-sliders"></i>
+                </button>
+                <button type="button" class="btn-card-hint text-slate-400 hover:text-white p-1.5 transition-colors" data-hint="Tóm tắt các sự kiện thời sự, công nghệ, kinh tế chọn lọc trong ngày theo chủ đề bạn thích." title="Hướng dẫn mục này">
+                  <i class="fa-regular fa-circle-question text-xs"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- VIEW: ĐIỂM TIN THỜI SỰ & THÔNG TIN YÊU THÍCH -->
+            <div id="news-digest-view" class="mt-3.5 flex flex-col">
+              <!-- Filter Chips Chủ đề nhanh -->
+              <div class="flex items-center gap-2 overflow-x-auto pb-1.5 mb-2.5 text-xs" id="news-topic-chips">
+                <button data-topic="all" class="news-chip active px-3 py-1 rounded-xl bg-blue-600 text-white font-bold transition-all shrink-0 shadow-xs" data-i18n="news_tab_all">Tất cả</button>
+                <button data-topic="top" class="news-chip px-3 py-1 rounded-xl bg-slate-800 text-slate-400 hover:text-white font-semibold transition-all shrink-0"><span class="text-amber-400">★</span> <span data-i18n="news_tab_top">Tiêu điểm</span></button>
+                <button data-topic="tech" class="news-chip px-3 py-1 rounded-xl bg-slate-800 text-slate-400 hover:text-white font-semibold transition-all shrink-0"><span class="w-1.5 h-1.5 rounded-full bg-cyan-400 inline-block mr-1"></span><span data-i18n="news_tab_tech">Công nghệ</span></button>
+                <button data-topic="economy" class="news-chip px-3 py-1 rounded-xl bg-slate-800 text-slate-400 hover:text-white font-semibold transition-all shrink-0"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block mr-1"></span><span data-i18n="news_tab_economy">Kinh tế</span></button>
+                <button data-topic="life" class="news-chip px-3 py-1 rounded-xl bg-slate-800 text-slate-400 hover:text-white font-semibold transition-all shrink-0"><span class="w-1.5 h-1.5 rounded-full bg-rose-400 inline-block mr-1"></span><span data-i18n="news_tab_life">Đời sống</span></button>
+              </div>
+
+              <!-- Danh sách tin tức 2 cột hài hòa trên màn hình rộng -->
+              <div id="news-list" class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-64 overflow-y-auto pr-1 text-xs">
+                <!-- JS rendered -->
+              </div>
+            </div>
+
+          </div>
+
+          <div class="mt-3 pt-2 border-t border-slate-800 text-[10px] text-slate-500 flex justify-between items-center">
+            <span id="news-footer-label">Cập nhật hôm nay • 4 tin</span>
+            <button id="btn-toggle-all-news" class="text-blue-400 hover:underline font-semibold" data-i18n="btn_view_all_news">Xem tất cả tin</button>
+          </div>
+        </div>
+
+      </div> <!-- HẾT GRID WIDGET -->
+
+    </div>
+
+    <!-- ==================== VIEW 2: PHÂN HỆ TÀI CHÍNH TOÀN DIỆN ==================== -->
+    <div id="view-finance" class="hidden p-6 md:p-8 space-y-6 flex-1 relative">
+      
+      <!-- Top Header Quản lý tài chính -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-slate-200">
+        <div>
+          <div class="flex items-center gap-2 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">
+            <button class="hover:text-blue-600 transition-colors" id="btn-back-to-overview">
+              <i class="fa-solid fa-arrow-left mr-1"></i><span data-i18n="back_overview">Tổng quan</span>
+            </button>
+            <span>/</span>
+            <span class="text-blue-600" data-i18n="finance_header_path">Quản lý Tài chính</span>
+          </div>
+          <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight" data-i18n="finance_main_title">Trung Tâm Quản Lý Tài Chính</h2>
+          <p class="text-xs text-slate-500" data-i18n="finance_subtitle">Theo dõi dòng tiền, chi tiêu tất cả các tháng và quản lý ngân sách cá nhân</p>
+        </div>
+
+        <div class="flex items-center gap-2.5">
+          <button id="btn-reset-finance-data" class="px-3 py-2 text-xs font-semibold rounded-xl border border-rose-200 text-rose-600 hover:bg-rose-50 transition-all flex items-center gap-1.5" title="Xóa toàn bộ dữ liệu về trắng">
+            <i class="fa-solid fa-rotate"></i>
+            <span data-i18n="btn_reset_zero">Đặt lại về 0</span>
+          </button>
+          <button id="btn-finance-add-main" class="px-4 py-2 text-xs font-bold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-600/20 active:scale-95 transition-all flex items-center gap-2">
+            <i class="fa-solid fa-plus"></i>
+            <span data-i18n="btn_add_trans_long">Thêm giao dịch mới</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- THANH ĐIỀU HƯỚNG 3 PHẦN CHÍNH & BỘ CHỌN THÁNG/NĂM -->
+
+      <!-- OVERLAY KHÓA TÀI CHÍNH (Hiển thị khi chưa đăng nhập) -->
+      <div id="finance-lock-overlay" class="hidden absolute inset-0 z-10 rounded-2xl flex items-center justify-center" style="background: rgba(248,250,252,0.85); backdrop-filter: blur(12px);">
+        <div class="text-center p-8 max-w-sm">
+          <div class="w-20 h-20 rounded-3xl bg-gradient-to-tr from-slate-700 to-slate-900 flex items-center justify-center text-white text-3xl mx-auto mb-4 shadow-2xl">
+            <i class="fa-solid fa-lock"></i>
+          </div>
+          <h3 class="text-xl font-extrabold text-slate-900 mb-2" data-i18n="lock_title">Dữ Liệu Được Bảo Vệ</h3>
+          <p class="text-sm text-slate-500 mb-6 leading-relaxed" data-i18n="finance_lock_prompt">Thông tin tài chính cá nhân của bạn được mã hóa và khóa. Vui lòng đăng nhập để xem chi tiết.</p>
+          <button id="btn-unlock-finance" class="w-full py-3 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-lg shadow-blue-500/30 active:scale-95 transition-all flex items-center justify-center gap-2">
+            <i class="fa-solid fa-shield-halved"></i>
+            <span data-i18n="btn_login_view_finance">Đăng nhập để xem Tài chính</span>
+          </button>
+          <p class="text-[11px] text-slate-400 mt-3">Mật khẩu mặc định: <span class="font-mono bg-slate-100 px-1.5 py-0.5 rounded">1234</span></p>
+        </div>
+      </div>
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white p-3.5 rounded-2xl border border-slate-100 shadow-soft">
+        
+        <!-- 3 Tabs chính: Tổng quan, Báo cáo, Lịch sử chi tiêu -->
+        <div class="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl" id="finance-subtabs">
+          <button data-ftab="overview" class="ftab-btn active flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all text-blue-600 bg-white shadow-sm">
+            <i class="fa-solid fa-chart-pie"></i>
+            <span data-i18n="ftab_overview">1. Tổng quan</span>
+          </button>
+          <button data-ftab="reports" class="ftab-btn flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all text-slate-600 hover:text-slate-900">
+            <i class="fa-solid fa-chart-simple"></i>
+            <span data-i18n="ftab_reports">2. Báo cáo 12 tháng</span>
+          </button>
+          <button data-ftab="history" class="ftab-btn flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all text-slate-600 hover:text-slate-900">
+            <i class="fa-solid fa-clock-rotate-left"></i>
+            <span data-i18n="ftab_history">3. Lịch sử chi tiêu</span>
+            <span id="badge-total-trans" class="text-[10px] px-1.5 py-0.2 rounded-full bg-slate-200 text-slate-700 font-bold ml-1">0</span>
+          </button>
+        </div>
+
+        <!-- BỘ CHỌN THÁNG / NĂM (Theo dõi tất cả các tháng trong năm) -->
+        <div class="flex items-center gap-2 self-end lg:self-auto">
+          <span class="text-xs font-semibold text-slate-500 whitespace-nowrap"><i class="fa-regular fa-calendar mr-1 text-blue-500"></i><span data-i18n="finance_period_label">Kỳ xem:</span></span>
+          
+          <!-- Dropdown chọn tháng -->
+          <select id="finance-filter-month" class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-medium text-slate-800 focus:outline-none focus:border-blue-500">
+            <option value="all">Tất cả các tháng (Cả năm)</option>
+            <option value="1">Tháng 1</option>
+            <option value="2">Tháng 2</option>
+            <option value="3">Tháng 3</option>
+            <option value="4">Tháng 4</option>
+            <option value="5">Tháng 5</option>
+            <option value="6">Tháng 6</option>
+            <option value="7">Tháng 7</option>
+            <option value="8">Tháng 8</option>
+            <option value="9">Tháng 9</option>
+            <option value="10">Tháng 10</option>
+            <option value="11" selected>Tháng 11</option>
+            <option value="12">Tháng 12</option>
+          </select>
+
+          <!-- Dropdown chọn năm -->
+          <select id="finance-filter-year" class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-medium text-slate-800 focus:outline-none focus:border-blue-500">
+            <option value="2025">Năm 2025</option>
+            <option value="2026" selected>Năm 2026</option>
+            <option value="2027">Năm 2027</option>
+          </select>
+        </div>
+
+      </div>
+
+      <!-- ================= 1. TAB CON: TỔNG QUAN TÀI CHÍNH ================= -->
+      <div id="ftab-content-overview" class="space-y-6">
+        
+        <!-- 3 Thẻ KPI tổng quan theo kỳ -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <!-- Thu nhập -->
+          <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-soft">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider" data-i18n="kpi_income_period">Thu Nhập Trong Kỳ</span>
+              <span class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-sm font-bold">
+                <i class="fa-solid fa-arrow-down-left"></i>
+              </span>
+            </div>
+            <div class="flex items-baseline gap-1.5">
+              <span id="kpi-period-income" class="text-2xl font-extrabold text-slate-900 tracking-tight">0</span>
+              <span class="text-xs font-bold text-emerald-600">VND</span>
+            </div>
+            <p class="text-[11px] text-slate-400 mt-2 flex items-center gap-1">
+              <i class="fa-solid fa-circle-info text-blue-500"></i> <span data-i18n="kpi_income_desc">Tổng các nguồn thu nhận về</span>
+            </p>
+          </div>
+
+          <!-- Chi tiêu -->
+          <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-soft">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider" data-i18n="kpi_spent_period">Chi Tiêu Trong Kỳ</span>
+              <span class="w-8 h-8 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-sm font-bold">
+                <i class="fa-solid fa-arrow-up-right"></i>
+              </span>
+            </div>
+            <div class="flex items-baseline gap-1.5">
+              <span id="kpi-period-spent" class="text-2xl font-extrabold text-slate-900 tracking-tight">0</span>
+              <span class="text-xs font-bold text-rose-600">VND</span>
+            </div>
+            <p class="text-[11px] text-slate-400 mt-2 flex items-center justify-between">
+              <span data-i18n="kpi_spent_ratio">Tỷ lệ chi tiêu:</span>
+              <b id="kpi-period-ratio" class="text-slate-700">0%</b>
+            </p>
+          </div>
+
+          <!-- Số dư ròng -->
+          <div class="bg-gradient-to-tr from-slate-900 to-slate-800 text-white rounded-2xl p-5 shadow-soft">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider" data-i18n="kpi_balance_period">Số Dư Ròng Trong Kỳ</span>
+              <span class="w-8 h-8 rounded-xl bg-white/10 text-emerald-400 flex items-center justify-center text-sm font-bold">
+                <i class="fa-solid fa-scale-balanced"></i>
+              </span>
+            </div>
+            <div class="flex items-baseline gap-1.5">
+              <span id="kpi-period-balance" class="text-2xl font-extrabold tracking-tight">0</span>
+              <span class="text-xs font-bold text-emerald-400">VND</span>
+            </div>
+            <p class="text-[11px] text-slate-400 mt-2" id="kpi-period-evaluation">
+              Dữ liệu chưa được thêm
+            </p>
+          </div>
+        </div>
+
+        <!-- GRID 2 CỘT: TOP CHI TIÊU & GIAO DỊCH GẦN ĐÂY -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+          <!-- KHỐI 1: TOP CHI TIÊU (Cols: 5) -->
+          <div class="lg:col-span-5 bg-white rounded-2xl p-6 border border-slate-100 shadow-soft flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
+                    <i class="fa-solid fa-fire"></i>
+                  </div>
+                  <div>
+                    <h3 class="font-bold text-slate-900 text-sm" data-i18n="top_spending_title">Top Chi Tiêu</h3>
+                    <p class="text-[11px] text-slate-400" data-i18n="top_spending_sub">Các hạng mục chi nhiều nhất</p>
+                  </div>
+                </div>
+                <span class="text-[11px] font-semibold text-slate-500 bg-slate-50 px-2 py-1 rounded-lg border border-slate-100" id="top-spent-count">0 mục</span>
+              </div>
+
+              <!-- Danh sách Top chi tiêu -->
+              <div id="top-spending-list" class="space-y-3 min-h-[180px] flex flex-col justify-center">
+                <!-- JS rendered -->
+              </div>
+
+              <!-- Nút Xem tất cả Top chi tiêu khi > 4 mục -->
+              <div id="top-spending-expand-container" class="mt-2 text-center hidden">
+                <button id="btn-toggle-top-spending" class="text-xs text-amber-700 hover:text-amber-900 font-semibold py-1 px-3 rounded-xl bg-amber-50 hover:bg-amber-100 transition-all">
+                  Xem tất cả các mục ↓
+                </button>
+              </div>
+            </div>
+
+            <div class="pt-4 border-t border-slate-100 mt-4 text-[11px] text-slate-400 flex items-center justify-between">
+              <span data-i18n="auto_categorized">Được phân loại tự động</span>
+              <span class="text-blue-600 font-medium" data-i18n="by_selected_period">Theo kỳ được chọn</span>
+            </div>
+          </div>
+
+          <!-- KHỐI 2: GIAO DỊCH GẦN ĐÂY CHIA RÕ NGÀY GIỜ SỐ TIỀN & NÚT XÓA (Cols: 7) -->
+          <div class="lg:col-span-7 bg-white rounded-2xl p-6 border border-slate-100 shadow-soft flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
+                    <i class="fa-solid fa-receipt"></i>
+                  </div>
+                  <div>
+                    <h3 class="font-bold text-slate-900 text-sm" data-i18n="recent_trans_title">Giao Dịch Gần Đây</h3>
+                    <p class="text-[11px] text-slate-400" data-i18n="recent_trans_sub">Hiển thị rõ ngày giờ, danh mục & số tiền</p>
+                  </div>
+                </div>
+                <button id="btn-quick-add-from-recent" class="text-xs font-semibold text-emerald-600 hover:text-emerald-700 flex items-center gap-1">
+                  <i class="fa-solid fa-plus"></i> <span data-i18n="btn_add_trans_short">Thêm giao dịch</span>
+                </button>
+              </div>
+
+              <!-- Danh sách giao dịch chi tiết có ngày giờ & nút xóa -->
+              <div id="finance-recent-list" class="space-y-2.5 min-h-[200px]">
+                <!-- JS rendered -->
+              </div>
+            </div>
+
+            <div class="pt-4 border-t border-slate-100 mt-4 flex items-center justify-between text-xs text-slate-500">
+              <span id="recent-trans-count-label">Hiển thị 0 giao dịch</span>
+              <button class="text-blue-600 hover:underline font-semibold" id="btn-switch-to-history"><span data-i18n="link_view_all_history">Xem toàn bộ lịch sử &rarr;</span></button>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- ================= 2. TAB CON: BÁO CÁO 12 THÁNG TRONG NĂM ================= -->
+      <div id="ftab-content-reports" class="hidden space-y-6">
+        
+        <!-- Bảng theo dõi chi tiêu của tất cả các tháng trong năm -->
+        <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-soft">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+            <div>
+              <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
+                <i class="fa-solid fa-chart-column text-blue-600"></i>
+                Báo Cáo Thu - Chi 12 Tháng Trong Năm <span id="report-year-label">2026</span>
+              </h3>
+              <p class="text-xs text-slate-400">So sánh chi tiêu, thu nhập và tỷ lệ tiết kiệm của từng tháng</p>
+            </div>
+            <div class="flex items-center gap-3 text-xs">
+              <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-emerald-500"></span> Thu nhập</span>
+              <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-rose-500"></span> Chi tiêu</span>
+              <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-blue-500"></span> Số dư ròng</span>
+            </div>
+          </div>
+
+          <!-- Bảng 12 Tháng -->
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead>
+                <tr class="bg-slate-50 text-slate-500 font-bold border-b border-slate-200">
+                  <th class="p-3 rounded-l-xl">Tháng</th>
+                  <th class="p-3 text-right">Tổng Thu Nhập</th>
+                  <th class="p-3 text-right">Tổng Chi Tiêu</th>
+                  <th class="p-3 text-right">Số Dư / Tiết Kiệm</th>
+                  <th class="p-3 text-center">Tỷ Lệ Chi (%)</th>
+                  <th class="p-3 rounded-r-xl text-center">Hành động</th>
+                </tr>
+              </thead>
+              <tbody id="monthly-report-tbody" class="divide-y divide-slate-100">
+                <!-- JS rendered 12 months -->
+              </tbody>
+              <tfoot id="monthly-report-tfoot" class="font-extrabold bg-slate-50/80 text-slate-900 border-t-2 border-slate-200">
+                <!-- JS rendered total -->
+              </tfoot>
+            </table>
+          </div>
+        </div>
+
+        <!-- Phân tích cơ cấu danh mục & Sức khỏe tài chính -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Cơ cấu chi tiêu theo nhóm -->
+          <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-soft">
+            <h4 class="font-bold text-slate-900 text-sm mb-3 flex items-center gap-2">
+              <i class="fa-solid fa-pie-chart text-indigo-500"></i> Cơ Cấu Chi Tiêu Theo Danh Mục Cả Năm
+            </h4>
+            <div id="categories-breakdown-list" class="space-y-3 text-xs">
+              <!-- JS rendered -->
+            </div>
+          </div>
+
+          <!-- Lời khuyên & Đánh giá tài chính -->
+          <div class="bg-gradient-to-br from-slate-900 to-indigo-950 text-white rounded-2xl p-6 shadow-soft flex flex-col justify-between">
+            <div>
+              <div class="flex items-center gap-2 text-blue-400 text-xs font-bold uppercase tracking-wider mb-2">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> AI Financial Insights
+              </div>
+              <h4 class="text-base font-bold text-white mb-2">Đánh Giá Sức Khỏe Dòng Tiền</h4>
+              <p class="text-xs text-slate-300 leading-relaxed" id="ai-financial-advice">
+                Chưa có đủ dữ liệu giao dịch trong năm để phân tích. Khi bạn nhập các khoản chi tiêu và thu nhập, hệ thống sẽ tự động tính toán tỷ lệ tiết kiệm và đưa ra khuyến nghị phân bổ ngân sách 50/30/20 chuẩn xác!
+              </p>
+            </div>
+            <div class="mt-4 pt-4 border-t border-white/10 flex items-center justify-between text-xs text-slate-400">
+              <span>Phương pháp: 50% Thiết yếu • 30% Hưởng thụ • 20% Tiết kiệm</span>
+              <span class="text-emerald-400 font-semibold"><i class="fa-solid fa-shield-check mr-1"></i>Sẵn sàng</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== BIỂU ĐỒ TRÒN 1 THÁNG + BIỂU ĐỒ CỘT 1 NĂM ===== -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+          <!-- BIỂU ĐỒ TRÒN: Cơ cấu chi tiêu của tháng được chọn -->
+          <div class="lg:col-span-5 bg-white rounded-2xl p-6 border border-slate-100 shadow-soft flex flex-col">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h4 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <i class="fa-solid fa-circle-half-stroke text-indigo-600"></i>
+                  Biểu Đồ Tròn Chi Tiêu
+                </h4>
+                <p class="text-[11px] text-slate-400 mt-0.5">Cơ cấu từng danh mục theo <span id="pie-chart-period-label" class="text-indigo-600 font-semibold">tháng được chọn</span></p>
+              </div>
+              <span class="text-[11px] bg-indigo-50 text-indigo-700 font-bold px-2.5 py-1 rounded-full border border-indigo-100">
+                <i class="fa-solid fa-chart-pie mr-1"></i>Pie Chart
+              </span>
+            </div>
+            <div class="flex-1 flex items-center justify-center min-h-[260px] relative">
+              <canvas id="chart-pie-monthly" class="max-h-64"></canvas>
+              <div id="pie-empty-state" class="hidden absolute inset-0 flex items-center justify-center">
+                <div class="text-center text-slate-400">
+                  <i class="fa-solid fa-chart-pie text-4xl text-slate-200 mb-2 block"></i>
+                  <p class="text-xs font-medium">Chưa có chi tiêu trong kỳ này</p>
+                </div>
+              </div>
+            </div>
+            <div id="pie-legend" class="mt-3 grid grid-cols-2 gap-1.5 text-[11px]"></div>
+          </div>
+
+          <!-- BIỂU ĐỒ CỘT: Thu nhập & Chi tiêu 12 tháng trong năm -->
+          <div class="lg:col-span-7 bg-white rounded-2xl p-6 border border-slate-100 shadow-soft flex flex-col">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h4 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <i class="fa-solid fa-chart-column text-blue-600"></i>
+                  Biểu Đồ Cột Thu - Chi Cả Năm
+                </h4>
+                <p class="text-[11px] text-slate-400 mt-0.5">So sánh thu nhập vs chi tiêu từng tháng trong <span id="bar-chart-year-label" class="text-blue-600 font-semibold">năm 2026</span></p>
+              </div>
+              <span class="text-[11px] bg-blue-50 text-blue-700 font-bold px-2.5 py-1 rounded-full border border-blue-100">
+                <i class="fa-solid fa-chart-simple mr-1"></i>Bar Chart
+              </span>
+            </div>
+            <div class="flex-1 min-h-[260px]">
+              <canvas id="chart-bar-yearly"></canvas>
+            </div>
+          </div>
+        </div>
+        <!-- ===== KẾT THÚC BIỂU ĐỒ ===== -->
+
+      </div>
+
+      <!-- ================= 3. TAB CON: LỊCH SỬ CHI TIÊU ĐẦY ĐỦ ================= -->
+      <div id="ftab-content-history" class="hidden space-y-6">
+        
+        <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-soft">
+          <!-- Công cụ lọc & Tìm kiếm -->
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+            <div class="flex flex-wrap items-center gap-2.5">
+              <!-- Tìm kiếm -->
+              <div class="relative w-64">
+                <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                <input type="text" id="history-search-input" placeholder="Tìm tên, danh mục..." 
+                  class="w-full bg-slate-50 pl-8 pr-3 py-1.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500">
+              </div>
+
+              <!-- Lọc loại -->
+              <select id="history-filter-type" class="bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs focus:outline-none">
+                <option value="all">Tất cả loại giao dịch</option>
+                <option value="expense">Chỉ Chi Tiêu (-)</option>
+                <option value="income">Chỉ Thu Nhập (+)</option>
+              </select>
+
+              <!-- Lọc danh mục -->
+              <select id="history-filter-category" class="bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs focus:outline-none">
+                <option value="all">Tất cả danh mục</option>
+                <option value="Ăn uống">Ăn uống</option>
+                <option value="Nhà ở & Hóa đơn">Nhà ở & Hóa đơn</option>
+                <option value="Mua sắm">Mua sắm</option>
+                <option value="Di chuyển">Di chuyển</option>
+                <option value="Học tập & Công việc">Học tập & Công việc</option>
+                <option value="Giải trí">Giải trí</option>
+                <option value="Lương & Thưởng">Lương & Thưởng</option>
+                <option value="Khác">Khác</option>
+              </select>
+            </div>
+
+            <!-- Các nút thao tác xuất / xóa -->
+            <div class="flex items-center gap-2">
+              <button id="btn-export-csv" class="px-3 py-1.5 text-xs font-semibold rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all flex items-center gap-1.5">
+                <i class="fa-solid fa-file-csv text-emerald-600"></i> Xuất CSV
+              </button>
+              <button id="btn-clear-all-transactions" class="px-3 py-1.5 text-xs font-semibold rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 transition-all flex items-center gap-1.5">
+                <i class="fa-solid fa-trash-can"></i> Xóa tất cả
+              </button>
+            </div>
+          </div>
+
+          <!-- Bảng danh sách toàn bộ giao dịch -->
+          <div class="overflow-x-auto mt-4">
+            <table class="w-full text-left text-xs">
+              <thead>
+                <tr class="bg-slate-50 text-slate-500 font-bold border-b border-slate-200">
+                  <th class="p-3 rounded-l-xl">Thời Gian (Ngày & Giờ)</th>
+                  <th class="p-3">Khoản Giao Dịch</th>
+                  <th class="p-3">Danh Mục</th>
+                  <th class="p-3">Phân Loại</th>
+                  <th class="p-3 text-right">Số Tiền (VND)</th>
+                  <th class="p-3 rounded-r-xl text-center">Thao Tác</th>
+                </tr>
+              </thead>
+              <tbody id="history-table-tbody" class="divide-y divide-slate-100">
+                <!-- JS rendered -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Phân trang / Tổng kết -->
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400">
+            <span id="history-summary-text">Tổng cộng 0 giao dịch</span>
+            <span class="text-slate-500">Dữ liệu được lưu trữ an toàn trong LocalStorage</span>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ==================== VIEW 3: PHÂN HỆ QUẢN LÝ CÔNG VIỆC CHUYÊN SÂU ==================== -->
+    <!-- ==================== VIEW 3: PHÂN HỆ QUẢN LÝ CÔNG VIỆC CHUYÊN SÂU & LỊCH BIỂU (DUAL PANEL MATCHING MOCKUP) ==================== -->
+    <div id="view-tasks" class="hidden p-4 sm:p-6 md:p-8 space-y-5 flex-1 relative">
+      
+      <!-- Top Header Quản lý công việc -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-slate-200">
+        <div>
+          <div class="flex items-center gap-2 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">
+            <button class="hover:text-blue-600 transition-colors" id="btn-tasks-back-to-overview">
+              <i class="fa-solid fa-arrow-left mr-1"></i><span data-i18n="back_overview">Tổng quan</span>
+            </button>
+            <span>/</span>
+            <span class="text-indigo-600" data-i18n="tasks_header_path">Quản lý Công việc & Lịch trình</span>
+          </div>
+          <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2.5">
+            <span data-i18n="tasks_main_title">Trung Tâm Công Việc & Lịch Biểu</span>
+            <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200" data-i18n="tag_live_sync">Đồng bộ trực quan</span>
+          </h2>
+        </div>
+
+        <div class="flex items-center gap-2.5 flex-wrap">
+          <button id="btn-open-task-settings" class="px-3.5 py-2 text-xs font-semibold rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 shadow-sm transition-all flex items-center gap-2" title="Cài đặt mục tiêu">
+            <i class="fa-solid fa-sliders text-indigo-600"></i>
+            <span data-i18n="btn_task_settings">Cài đặt Mục tiêu</span>
+          </button>
+          <button id="btn-open-add-task-modal" class="px-4 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-md shadow-blue-500/25 active:scale-95 transition-all flex items-center gap-2">
+            <i class="fa-solid fa-plus"></i>
+            <span data-i18n="btn_create_task">Thêm việc mới</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- MAIN DUAL-PANEL LAYOUT (CHUẨN 100% ẢNH USER GỬI: LỊCH BIỂU BÊN TRÁI & HEALTH + KANBAN BÊN PHẢI) -->
+      <div class="grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">
+        
+        <!-- BẢNG BÊN TRÁI: CALENDAR SCHEDULE GRID (8 CỘT TRÊN XL - CHIẾM 2/3 KHÔNG GIAN ĐỂ HIỂN THỊ ĐỦ TRỌN VẸN TỪ THỨ 2 ĐẾN CHỦ NHẬT) -->
+        <div class="xl:col-span-8 2xl:col-span-8 bg-[#fffefb] rounded-3xl border-2 border-slate-900 shadow-[3px_3px_0px_#1e293b] overflow-hidden flex flex-col">
+          
+          <!-- Top Header thanh lịch tuần chuẩn ảnh -->
+          <div class="p-3.5 border-b-2 border-slate-900 bg-[#fbf9f3] flex items-center justify-between gap-3 flex-wrap">
+            <div class="flex items-center gap-2.5 flex-wrap">
+              <!-- Chấm tròn đỏ và tên tuần chuẩn ảnh (Click để mở bộ chọn ngày) -->
+              <span class="w-3 h-3 rounded-full border-2 border-rose-500 bg-rose-100 inline-block shrink-0"></span>
+              <h3 id="calendar-week-label" class="font-black text-slate-900 text-sm sm:text-base tracking-tight cursor-pointer hover:text-indigo-600 transition-colors" title="Bấm để chọn nhanh ngày, tháng, năm bất kỳ">
+                Tuần 42 (11/11 - 17/11/2026)
+              </h3>
+              
+              <!-- Nút chuyển tuần & Về hôm nay -->
+              <div class="flex items-center gap-1">
+                <button id="btn-cal-prev-week" class="w-7 h-7 rounded-lg bg-white border-2 border-slate-900 hover:bg-amber-100 text-slate-900 transition-all flex items-center justify-center shadow-[1px_1px_0px_#1e293b] active:scale-95" title="Tuần trước">
+                  <i class="fa-solid fa-chevron-left text-[10px]"></i>
+                </button>
+                <button id="btn-cal-today" class="px-2.5 py-1 bg-amber-400 hover:bg-amber-300 text-slate-900 font-black text-xs rounded-lg border-2 border-slate-900 shadow-[1px_1px_0px_#1e293b] active:scale-95 transition-all" title="Trở về tuần hiện tại" data-i18n="cal_btn_today">
+                  Hôm nay
+                </button>
+                <button id="btn-cal-next-week" class="w-7 h-7 rounded-lg bg-white border-2 border-slate-900 hover:bg-amber-100 text-slate-900 transition-all flex items-center justify-center shadow-[1px_1px_0px_#1e293b] active:scale-95" title="Tuần sau">
+                  <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Cụm công cụ: Chọn ngày tháng năm trực tiếp + Chọn khung giờ + Thêm Lịch Hẹn -->
+            <div class="flex items-center gap-2 flex-wrap">
+              <!-- Bộ chọn ngày tháng năm bất kỳ trực tiếp -->
+              <div id="cal-jump-date-wrap" class="flex items-center gap-1.5 bg-white border-2 border-slate-900 rounded-xl px-2.5 py-1 shadow-[1.5px_1.5px_0px_#1e293b]" title="Chọn ngày tháng năm bất kỳ để xem lịch">
+                <i class="fa-regular fa-calendar-days text-slate-700 text-xs"></i>
+                <input type="date" id="cal-jump-date-picker" value="2026-11-11" class="bg-transparent text-xs font-bold text-slate-900 focus:outline-none cursor-pointer">
+              </div>
+
+              <!-- Tùy chỉnh khung giờ hiển thị (không bị bó buộc 8h - 18h) -->
+              <select id="cal-working-hours" class="px-2.5 py-1.5 bg-white border-2 border-slate-900 rounded-xl text-xs font-black text-slate-900 shadow-[1.5px_1.5px_0px_#1e293b] cursor-pointer focus:outline-none hover:bg-amber-50 transition-all" title="Tùy chỉnh khung giờ hiển thị trên bảng biểu">
+                <option value="0-23">⏱️ 00:00 – 23:00 (24 Giờ)</option>
+                <option value="5-23">⏱️ 05:00 – 23:00 (5h – 23h)</option>
+                <option value="6-22" selected>⏱️ 06:00 – 22:00 (6h – 22h)</option>
+                <option value="7-20">⏱️ 07:00 – 20:00 (7h – 20h)</option>
+                <option value="8-18">⏱️ 08:00 – 18:00 (8h – 18h)</option>
+              </select>
+
+              <!-- Nút + Thêm Lịch Hẹn màu xanh ngọc (Teal) chuẩn ảnh -->
+              <button id="btn-cal-add-event" class="px-3.5 py-1.5 text-xs font-black rounded-xl bg-teal-400 hover:bg-teal-300 text-slate-900 border-2 border-slate-900 shadow-[1.5px_1.5px_0px_#1e293b] flex items-center gap-1.5 shrink-0 active:scale-95 transition-all">
+                <i class="fa-solid fa-plus text-[10px]"></i>
+                <span data-i18n="cal_btn_add_event">Thêm Lịch Hẹn</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Ma trận Lịch Biểu Tuần (Chuẩn ảnh: Giờ, Thứ 2 (11), Thứ 3 (12), Thứ 4 (13), Thứ 5 (14), Thứ 6 (15), Thứ 7 (16), CN (17)) -->
+          <div class="overflow-x-auto max-h-[660px] overflow-y-auto">
+            <table class="w-full border-collapse text-left text-xs table-fixed" id="table-weekly-schedule">
+              <thead class="sticky top-0 bg-[#f5eedc] z-10">
+                <tr class="border-b-2 border-slate-900 text-slate-900 font-black">
+                  <th class="py-2 px-1 w-12 sm:w-14 border-r-2 border-slate-900 text-center uppercase tracking-wider text-[10px] sm:text-[11px]" data-i18n="th_time">Giờ</th>
+                  <th class="py-2 px-1 border-r-2 border-slate-900 text-center cal-day-th" data-day="1">Thứ 2 (11)</th>
+                  <th class="py-2 px-1 border-r-2 border-slate-900 text-center cal-day-th" data-day="2">Thứ 3 (12)</th>
+                  <th class="py-2 px-1 border-r-2 border-slate-900 text-center cal-day-th" data-day="3">Thứ 4 (13)</th>
+                  <th class="py-2 px-1 border-r-2 border-slate-900 text-center cal-day-th" data-day="4">Thứ 5 (14)</th>
+                  <th class="py-2 px-1 border-r-2 border-slate-900 text-center cal-day-th" data-day="5">Thứ 6 (15)</th>
+                  <th class="py-2 px-1 border-r-2 border-slate-900 text-center cal-day-th" data-day="6">Thứ 7 (16)</th>
+                  <th class="py-2 px-1 text-center cal-day-th" data-day="0">CN (17)</th>
+                </tr>
+              </thead>
+              <tbody id="schedule-matrix-body">
+                <!-- JS populated rows: Cả ngày, 9 am, 10 am, 11 am, 12 pm, 1 pm, 2 pm... -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Bottom helper bar -->
+          <div class="p-2.5 bg-[#fbf9f3] border-t-2 border-slate-900 text-[11px] text-slate-600 flex items-center justify-between font-bold">
+            <span><i class="fa-regular fa-lightbulb text-amber-500 mr-1.5"></i><span data-i18n="cal_click_hint">Bấm vào bất kỳ ô giờ nào để tạo nhanh sự kiện / lịch hẹn.</span></span>
+            <span class="text-slate-800" id="cal-events-count">0 sự kiện</span>
+          </div>
+        </div>
+
+        <!-- BẢNG BÊN PHẢI: CANBAN TO-DO + IN PROGRESS (CHUẨN 100% ẢNH MẪU) -->
+        <div class="xl:col-span-4 2xl:col-span-4 space-y-4 flex flex-col">
+
+          <!-- Search project bar trong cột phải (giữ chức năng tìm kiếm nhanh) -->
+          <div class="hidden">
+            <input type="text" id="task-filter-search" placeholder="Search project...">
+          </div>
+
+          <!-- 1. CANBAN: To-do CONTAINER -->
+          <div class="bg-[#fffefb] border-2 border-slate-900 rounded-2xl p-4 shadow-[3px_3px_0px_#1e293b] space-y-3">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full border-2 border-rose-500 inline-block"></span>
+                <h4 class="font-black text-slate-900 text-sm tracking-tight" data-i18n="col_todo">CANBAN: To-do</h4>
+              </div>
+              <span id="badge-count-todo" class="w-6 h-6 rounded-lg bg-white border-2 border-slate-900 text-slate-900 text-xs font-black flex items-center justify-center shadow-[1px_1px_0px_#1e293b]">0</span>
+            </div>
+
+            <!-- Thẻ công việc To-do -->
+            <div class="space-y-2.5 max-h-[300px] overflow-y-auto pr-1 kanban-dropzone" id="cards-col-todo" data-status="todo">
+              <!-- JS rendered cards -->
+            </div>
+
+            <!-- Nút + Thêm Thẻ Công Việc -->
+            <button id="btn-add-card-todo" class="w-full py-2 rounded-xl border-2 border-dashed border-slate-300 hover:border-slate-900 text-slate-700 hover:text-slate-900 text-xs font-bold transition-all flex items-center justify-center gap-1.5 bg-slate-50 hover:bg-white active:scale-98">
+              <i class="fa-solid fa-plus text-[10px]"></i>
+              <span data-i18n="btn_add_card_kanban">+ Thêm Thẻ Công Việc</span>
+            </button>
+          </div>
+
+          <!-- 3. In Progress CONTAINER -->
+          <div class="bg-[#fffefb] border-2 border-slate-900 rounded-2xl p-4 shadow-[3px_3px_0px_#1e293b] space-y-3">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full border-2 border-rose-500 inline-block"></span>
+                <h4 class="font-black text-slate-900 text-sm tracking-tight" data-i18n="col_doing">In Progress</h4>
+              </div>
+              <span id="badge-count-doing" class="w-6 h-6 rounded-lg bg-white border-2 border-slate-900 text-slate-900 text-xs font-black flex items-center justify-center shadow-[1px_1px_0px_#1e293b]">0</span>
+            </div>
+
+            <!-- Thẻ công việc In Progress -->
+            <div class="space-y-2.5 max-h-[300px] overflow-y-auto pr-1 kanban-dropzone" id="cards-col-doing" data-status="doing">
+              <!-- JS rendered cards -->
+            </div>
+
+            <!-- Nút + Thêm Thẻ Công Việc -->
+            <button id="btn-add-card-doing" class="w-full py-2 rounded-xl border-2 border-dashed border-slate-300 hover:border-slate-900 text-slate-700 hover:text-slate-900 text-xs font-bold transition-all flex items-center justify-center gap-1.5 bg-slate-50 hover:bg-white active:scale-98">
+              <i class="fa-solid fa-plus text-[10px]"></i>
+              <span data-i18n="btn_add_card_kanban">+ Thêm Thẻ Công Việc</span>
+            </button>
+          </div>
+
+          <!-- 4. Drawer: Đã hoàn thành (Done) -->
+          <div class="bg-[#fffefb] border-2 border-slate-900 rounded-xl p-3 shadow-[2px_2px_0px_#1e293b]">
+            <div class="flex items-center justify-between text-xs">
+              <button id="btn-toggle-done-drawer" class="font-bold text-slate-700 hover:text-indigo-600 flex items-center gap-1.5 transition-colors">
+                <i class="fa-solid fa-chevron-right text-[10px] transition-transform duration-200" id="icon-done-drawer"></i>
+                <span data-i18n="col_done">Đã hoàn thành</span>
+                <span class="px-1.5 py-0.2 rounded-full bg-slate-200 text-slate-800 text-[10px] font-bold border border-slate-900" id="badge-count-done">0</span>
+              </button>
+              <button id="btn-clear-all-done-tasks" class="text-slate-500 hover:text-rose-600 text-[11px] font-semibold transition-colors">
+                <i class="fa-solid fa-broom mr-1"></i><span data-i18n="clean_all_done">Dọn dẹp</span>
+              </button>
+            </div>
+            <div id="container-done-drawer" class="hidden mt-2.5 space-y-2 max-h-40 overflow-y-auto pr-1"></div>
+          </div>
+
+        </div>
+
+      </div>
+
+
+
+    </div>
+
+    <!-- ==================== VIEW 4: PHÂN HỆ THEO DÕI SỨC KHỎE (BENTO BLOCKS SYSTEM) ==================== -->
+    <div id="view-health" class="hidden p-4 sm:p-6 md:p-8 space-y-6 flex-1 relative">
+      
+      <!-- Top Header Quản lý Sức Khỏe (Tinh Gọn) -->
+      <div class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
+        <div class="flex items-center gap-3">
+          <button class="w-10 h-10 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:text-emerald-600 transition-colors flex items-center justify-center shadow-xs" id="btn-health-back-to-overview" title="Về tổng quan">
+            <i class="fa-solid fa-arrow-left"></i>
+          </button>
+          <div>
+            <h2 class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+              <span data-i18n="health_main_title">Sức Khỏe & Thể Lực</span>
+              <span class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                <i class="fa-solid fa-heart-pulse mr-1"></i>Bento Hub
+              </span>
+            </h2>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button id="btn-open-health-settings" class="px-3.5 py-2 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 shadow-xs transition-all flex items-center gap-1.5" title="Cài đặt mục tiêu">
+            <i class="fa-solid fa-sliders text-emerald-600"></i>
+            <span class="hidden sm:inline" data-i18n="btn_health_settings">Mục tiêu</span>
+          </button>
+          <button id="btn-open-health-log-modal" class="px-4 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-md shadow-emerald-600/20 active:scale-95 transition-all flex items-center gap-1.5">
+            <i class="fa-solid fa-plus"></i>
+            <span data-i18n="btn_log_health">Ghi nhận</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 4 BENTO COLORFUL HERO BLOCKS -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+        
+        <!-- 1. BLOCK VẬN ĐỘNG (EMERALD GRADIENT) -->
+        <div class="bento-block bg-gradient-to-br from-emerald-600 via-teal-600 to-emerald-800 p-5 text-white shadow-soft flex flex-col justify-between min-h-[220px]">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="flex items-center gap-2 text-xs font-extrabold uppercase tracking-wider text-emerald-100">
+                <i class="fa-solid fa-person-walking text-base"></i>
+                <span data-i18n="label_daily_steps">Vận Động</span>
+              </span>
+              <div class="flex items-center gap-1">
+                <button id="btn-health-add-500" class="bento-glass-btn px-2 py-0.5 text-[10px]">+500</button>
+                <button id="btn-health-add-1000" class="bento-glass-btn px-2 py-0.5 text-[10px]">+1K</button>
+              </div>
+            </div>
+
+            <div class="flex items-baseline gap-2 my-2">
+              <span id="health-kpi-steps" class="text-3xl sm:text-4xl font-black tracking-tight text-white">8.432</span>
+              <span class="text-xs font-semibold text-emerald-200" id="health-kpi-steps-target">/ 10.000 bước</span>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="w-full bg-black/25 rounded-full h-2.5 overflow-hidden p-0.5 my-2">
+              <div id="health-kpi-steps-bar" class="bg-white h-full rounded-full transition-all duration-700 shadow-sm" style="width: 84.3%;"></div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 mt-3 pt-2 border-t border-white/15">
+            <div class="bento-sub-tile justify-center py-1.5 px-2">
+              <i class="fa-solid fa-location-dot text-emerald-200 text-xs"></i>
+              <span class="text-[11px] font-bold text-white" id="health-steps-distance">5.8 km</span>
+            </div>
+            <div class="bento-sub-tile justify-center py-1.5 px-2">
+              <i class="fa-solid fa-bullseye text-emerald-200 text-xs"></i>
+              <span class="text-[11px] font-bold text-white" id="health-kpi-steps-remain">84.3% đạt</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. BLOCK NĂNG LƯỢNG TIÊU HAO (AMBER / CORAL GRADIENT) -->
+        <div class="bento-block bg-gradient-to-br from-amber-500 via-orange-500 to-rose-600 p-5 text-white shadow-soft flex flex-col justify-between min-h-[220px]">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="flex items-center gap-2 text-xs font-extrabold uppercase tracking-wider text-amber-100">
+                <i class="fa-solid fa-fire text-base text-amber-200"></i>
+                <span data-i18n="label_calories_burned">Năng Lượng</span>
+              </span>
+              <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-white/20 backdrop-blur-md text-white border border-white/25">Mục tiêu 500</span>
+            </div>
+
+            <div class="flex items-baseline gap-1.5 my-2">
+              <span id="health-kpi-calories" class="text-3xl sm:text-4xl font-black tracking-tight text-white">337</span>
+              <span class="text-xs font-bold text-amber-100">kcal</span>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="w-full bg-black/25 rounded-full h-2.5 overflow-hidden p-0.5 my-2">
+              <div id="health-kpi-calories-bar" class="bg-white h-full rounded-full transition-all duration-700 shadow-sm" style="width: 67.4%;"></div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 mt-3 pt-2 border-t border-white/15">
+            <div class="bento-sub-tile justify-center py-1.5 px-2">
+              <i class="fa-solid fa-person-walking text-amber-200 text-xs"></i>
+              <span class="text-[11px] font-bold text-white" id="health-cal-walking">240 kcal đi bộ</span>
+            </div>
+            <div class="bento-sub-tile justify-center py-1.5 px-2">
+              <i class="fa-solid fa-bolt text-amber-200 text-xs"></i>
+              <span class="text-[11px] font-bold text-white" id="health-kpi-cal-pct">67% mục tiêu</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. BLOCK NƯỚC UỐNG & NHẮC NHỞ (ELECTRIC BLUE GRADIENT) -->
+        <div class="bento-block bg-gradient-to-br from-sky-600 via-blue-600 to-indigo-700 p-5 text-white shadow-soft flex flex-col justify-between min-h-[220px]">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="flex items-center gap-2 text-xs font-extrabold uppercase tracking-wider text-sky-100">
+                <i class="fa-solid fa-droplet text-base text-cyan-200 animate-water-pulse"></i>
+                <span data-i18n="label_water_intake">Nước Uống</span>
+              </span>
+              <button id="btn-health-add-water-kpi" class="bento-glass-btn px-2.5 py-0.5 text-[10px] flex items-center gap-1">
+                <i class="fa-solid fa-plus text-[9px]"></i> 250ml
+              </button>
+            </div>
+
+            <div class="flex items-baseline gap-2 my-2">
+              <span id="health-kpi-water" class="text-3xl sm:text-4xl font-black tracking-tight text-white">1.750</span>
+              <span class="text-xs font-semibold text-sky-200" id="health-kpi-water-target">/ 2.000 ml</span>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="w-full bg-black/25 rounded-full h-2.5 overflow-hidden p-0.5 my-2">
+              <div id="health-kpi-water-bar" class="bg-cyan-300 h-full rounded-full transition-all duration-700 shadow-sm" style="width: 87.5%;"></div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 mt-3 pt-2 border-t border-white/15">
+            <div class="bento-sub-tile justify-center py-1.5 px-2">
+              <i class="fa-solid fa-glass-water text-cyan-200 text-xs"></i>
+              <span class="text-[11px] font-bold text-white" id="health-kpi-water-cups">7/8 Ly</span>
+            </div>
+            <div class="bento-sub-tile justify-center py-1.5 px-2">
+              <i class="fa-solid fa-bell text-cyan-200 text-xs"></i>
+              <span class="text-[11px] font-bold text-white" id="health-water-quick-rem">Nhắc: 35p</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. BLOCK GIẤC NGỦ KHOA HỌC (DEEP INDIGO / VIOLET GRADIENT) -->
+        <div class="bento-block bg-gradient-to-br from-indigo-700 via-purple-700 to-slate-900 p-5 text-white shadow-soft flex flex-col justify-between min-h-[220px]">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="flex items-center gap-2 text-xs font-extrabold uppercase tracking-wider text-purple-100">
+                <i class="fa-solid fa-moon text-base text-indigo-200"></i>
+                <span data-i18n="label_sleep_tracker">Giấc Ngủ</span>
+              </span>
+              <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-white/20 backdrop-blur-md text-white border border-white/25" id="health-kpi-sleep-score">0đ • Chưa ghi nhận</span>
+            </div>
+
+            <div class="flex items-baseline gap-2 my-2">
+              <span id="health-kpi-sleep" class="text-3xl sm:text-4xl font-black tracking-tight text-white">0h 00m</span>
+              <span class="text-xs font-semibold text-purple-200">/ 8h chuẩn</span>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="w-full bg-black/25 rounded-full h-2.5 overflow-hidden p-0.5 my-2">
+              <div id="health-kpi-sleep-bar" class="bg-purple-300 h-full rounded-full transition-all duration-700 shadow-sm" style="width: 0%;"></div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 mt-3 pt-2 border-t border-white/15">
+            <div class="bento-sub-tile justify-center py-1.5 px-2">
+              <i class="fa-solid fa-bed text-purple-200 text-xs"></i>
+              <span class="text-[11px] font-bold text-white" id="health-sleep-bed-tile">--:-- ngủ</span>
+            </div>
+            <div class="bento-sub-tile justify-center py-1.5 px-2">
+              <i class="fa-regular fa-sun text-purple-200 text-xs"></i>
+              <span class="text-[11px] font-bold text-white" id="health-sleep-wake-tile">--:-- dậy</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- MAIN ROW 2: TÁCH 2 BIỂU ĐỒ TRỰC QUAN (VẬN ĐỘNG & GIẤC NGỦ CHU KỲ 90 PHÚT) -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 items-stretch">
+        
+        <!-- BIỂU ĐỒ 1: VẬN ĐỘNG 7 NGÀY (BƯỚC CHÂN & CALO) -->
+        <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-soft flex flex-col justify-between">
+          <div>
+            <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+              <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold shadow-xs shrink-0">
+                  <i class="fa-solid fa-chart-column text-base"></i>
+                </div>
+                <div>
+                  <h3 class="font-extrabold text-slate-900 dark:text-white text-base" data-i18n="health_chart_activity">Vận Động 7 Ngày</h3>
+                  <p class="text-[11px] text-slate-500 dark:text-slate-400 font-medium mt-0.5" id="health-chart-subtitle" data-i18n="health_chart_activity_sub">Theo từng ngày thực tế (không tự điền số giả)</p>
+                </div>
+              </div>
+
+              <!-- 3 Badges Vận Động -->
+              <div class="flex items-center gap-2 text-xs flex-wrap">
+                <span class="px-2.5 py-1 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-[11px]" id="health-stat-badge-1">
+                  👟 <span class="badge-label-stat">TB:</span> <b class="text-emerald-600 dark:text-emerald-400" id="health-stat-avg-steps">0</b>
+                </span>
+                <span class="px-2.5 py-1 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-[11px]" id="health-stat-badge-2">
+                  🔥 <span class="badge-label-stat">Tổng:</span> <b class="text-amber-600 dark:text-amber-400" id="health-stat-total-cals">0 kcal</b>
+                </span>
+                <span class="px-2.5 py-1 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-[11px]" id="health-stat-badge-3">
+                  🎯 <span class="badge-label-stat">Đạt:</span> <b class="text-blue-600 dark:text-blue-400" id="health-stat-goal-rate">0 / 0 ngày</b>
+                </span>
+              </div>
+            </div>
+
+            <!-- Chart Canvas Vận Động -->
+            <div class="min-h-[220px] max-h-[250px]">
+              <canvas id="chart-health-weekly"></canvas>
+            </div>
+          </div>
+
+          <!-- Bottom Action: Ghi nhận bước chân -->
+          <div class="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-xs">
+            <span class="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1.5 font-medium">
+              <i class="fa-solid fa-hand-pointer text-emerald-500"></i> <span data-i18n="health_click_steps_hint">Bấm cột để chỉ nhập bước chân</span>
+            </span>
+            <button type="button" id="btn-chart-add-steps" class="px-3 py-1 rounded-xl bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:hover:bg-emerald-900/60 text-emerald-600 dark:text-emerald-400 font-bold text-xs transition-all active:scale-95 flex items-center gap-1">
+              <i class="fa-solid fa-plus text-[10px]"></i> <span data-i18n="btn_log_steps">Nhập bước chân</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- BIỂU ĐỒ 2: GIẤC NGỦ 7 NGÀY & CHU KỲ 90 PHÚT (THAY THẾ PHẦN CŨ NHIỀU CHỮ, TRỰC QUAN 100%) -->
+        <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-soft flex flex-col justify-between">
+          <div>
+            <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+              <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold shadow-xs shrink-0">
+                  <i class="fa-solid fa-moon text-base"></i>
+                </div>
+                <div>
+                  <h3 class="font-extrabold text-slate-900 dark:text-white text-base" data-i18n="health_chart_sleep">Giấc Ngủ 7 Ngày (Chu Kỳ 90m)</h3>
+                  <p class="text-[11px] text-slate-500 dark:text-slate-400 font-medium mt-0.5" data-i18n="health_chart_sleep_sub">Chuẩn khoa học: 7.0h – 9.0h (5 chu kỳ 90 phút)</p>
+                </div>
+              </div>
+
+              <!-- 3 Badges Giấc Ngủ -->
+              <div class="flex items-center gap-2 text-xs flex-wrap">
+                <span class="px-2.5 py-1 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-[11px]" id="sleep-stat-badge-1">
+                  💤 <span class="badge-label-stat">TB:</span> <b class="text-indigo-600 dark:text-indigo-400" id="sleep-stat-avg-hours">0h</b>
+                </span>
+                <span class="px-2.5 py-1 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-[11px]" id="sleep-stat-badge-2">
+                  ⭐ <span class="badge-label-stat">Điểm:</span> <b class="text-purple-600 dark:text-purple-400" id="sleep-stat-score">0đ</b>
+                </span>
+                <span class="px-2.5 py-1 rounded-xl text-[11px] font-bold" id="sleep-stat-badge-3">
+                  <b id="sleep-stat-quality-pill">Chưa có dữ liệu</b>
+                </span>
+              </div>
+            </div>
+
+            <!-- Chart Canvas Giấc Ngủ -->
+            <div class="min-h-[220px] max-h-[250px]">
+              <canvas id="chart-sleep-weekly"></canvas>
+            </div>
+          </div>
+
+          <!-- Bottom Visual Bar: Mini 90m cycle pills & Quick info (Trực quan, không tường chữ) -->
+          <div class="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800/80 space-y-2">
+            <div class="flex items-center justify-between flex-wrap gap-2 text-xs">
+              <div class="flex items-center gap-1.5 text-slate-600 dark:text-slate-300 font-semibold" id="sleep-chart-timeline-pill">
+                <i class="fa-regular fa-clock text-indigo-500"></i> <span id="lbl-sleep-timeline-sleep">Ngủ:</span> <b class="text-slate-900 dark:text-white" id="sleep-chart-bedtime">--:--</b> ➔ <span id="lbl-sleep-timeline-wake">Dậy:</span> <b class="text-slate-900 dark:text-white" id="sleep-chart-waketime">--:--</b>
+              </div>
+              <button type="button" id="btn-chart-add-sleep" class="px-3 py-1 rounded-xl bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 text-indigo-600 dark:text-indigo-400 font-bold text-xs transition-all active:scale-95 flex items-center gap-1">
+                <i class="fa-solid fa-plus text-[10px]"></i> <span data-i18n="btn_log_sleep">Nhập giờ ngủ</span>
+              </button>
+            </div>
+            
+            <!-- Chu kỳ 90m trực quan dạng thanh mini -->
+            <div class="flex items-center justify-between gap-1 text-[10px] text-slate-500 dark:text-slate-400 font-bold overflow-x-auto py-0.5" id="sleep-cycles-pills-row">
+              <span class="px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800">Kỳ 1: 1.5h</span>
+              <span class="px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800">Kỳ 2: 3.0h</span>
+              <span class="px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800">Kỳ 3: 4.5h</span>
+              <span class="px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800">Kỳ 4: 6.0h</span>
+              <span class="px-2 py-0.5 rounded-lg bg-emerald-100 text-emerald-700 dark:bg-emerald-950/70 dark:text-emerald-300 border border-emerald-400/40">Kỳ 5: 7.5h ★ Lý tưởng</span>
+              <span class="px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800">Kỳ 6: 9.0h</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- MAIN ROW 3: TRẠM NƯỚC 8 LY MỖI NGÀY & NHẮC NHỞ UỐNG NƯỚC THÔNG MINH -->
+      <div class="bg-gradient-to-br from-slate-900 via-slate-900 to-sky-950 text-white rounded-3xl p-5 border border-sky-900/40 shadow-soft">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center font-bold">
+              <i class="fa-solid fa-faucet-drip text-sm"></i>
+            </div>
+            <div>
+              <span class="font-extrabold text-sm tracking-wide block" data-i18n="water_station_title">Trạm Nước 8 Ly Mỗi Ngày</span>
+              <span class="text-[11px] text-slate-400 font-medium" data-i18n="water_station_sub">Bấm từng ly để ghi nhận 250ml hoặc uống nhanh</span>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="btn-drink-now" class="px-3.5 py-1.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-white font-bold text-xs shadow-sm transition-all active:scale-95 flex items-center gap-1.5">
+              <i class="fa-solid fa-plus text-[10px]"></i> <span data-i18n="btn_drink_now">Uống ngay 1 ly (250ml)</span>
+            </button>
+            <button id="btn-chart-add-water" class="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-sky-200 font-bold text-xs transition-all active:scale-95 flex items-center gap-1">
+              <i class="fa-solid fa-pen text-[10px]"></i> <span data-i18n="btn_log_water">Tự điền nước</span>
+            </button>
+            <button id="btn-reset-water-today" class="text-slate-400 hover:text-rose-400 p-1 text-xs" title="Đặt lại về 0">
+              <i class="fa-solid fa-rotate-left"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- 8 Graphical Neon Tiles -->
+        <div class="grid grid-cols-4 sm:grid-cols-8 gap-2.5 my-3" id="water-cups-grid">
+          <!-- JS rendered 8 neon cups -->
+        </div>
+
+        <div class="flex items-center justify-between pt-2.5 border-t border-white/10 text-[11px] text-slate-400 flex-wrap gap-2">
+          <span id="water-next-reminder-text" class="flex items-center gap-1.5 text-sky-300 font-medium">
+            <i class="fa-regular fa-bell"></i> Còn khoảng 35 phút đến ly tiếp theo
+          </span>
+          <label class="flex items-center gap-1.5 cursor-pointer">
+            <input type="checkbox" id="toggle-water-reminder" checked class="w-3.5 h-3.5 text-sky-500 rounded">
+            <span class="text-slate-300 font-medium" data-i18n="water_reminder_toggle">Bật nhắc nhở thông minh</span>
+          </label>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ==================== VIEW 5: CÀI ĐẶT HỆ THỐNG & ĐỒNG BỘ NGÔN NGỮ (SETTINGS VIEW) ==================== -->
+    <div id="view-settings" class="hidden p-6 md:p-8 space-y-6 flex-1 relative max-w-5xl mx-auto">
+      
+      <!-- Top Header Cài đặt -->
+      <div class="pb-3 border-b border-slate-200">
+        <div class="flex items-center gap-2 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">
+          <button class="hover:text-blue-600 transition-colors" id="btn-settings-back-to-overview">
+            <i class="fa-solid fa-arrow-left mr-1"></i><span data-i18n="back_overview">Tổng quan</span>
+          </button>
+          <span>/</span>
+          <span class="text-indigo-600" data-i18n="nav_settings">Cài đặt</span>
+        </div>
+        <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight" data-i18n="settings_title">Cài Đặt Hệ Thống & Tùy Biến</h2>
+        <p class="text-xs text-slate-500" data-i18n="settings_subtitle">Chuyển đổi ngôn ngữ Tiếng Việt / Tiếng Anh, bảo mật tài chính và quản lý mục tiêu cá nhân</p>
+      </div>
+
+      <div class="space-y-6">
+
+        <!-- CARD 1: CÀI ĐẶT NGÔN NGỮ (LANGUAGE SETTINGS) -->
+        <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-soft">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="card-icon-badge w-10 h-10 rounded-xl bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center text-lg">
+              <i class="fa-solid fa-language"></i>
+            </div>
+            <div>
+              <h3 class="font-bold text-slate-900 text-sm" data-i18n="lang_setting_title">Ngôn Ngữ Hiển Thị (Display Language)</h3>
+              <p class="text-xs text-slate-400" data-i18n="lang_setting_desc">Chọn ngôn ngữ để đồng bộ toàn bộ giao diện: Thanh điều hướng, Lịch biểu, Bảng việc, Tài chính</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+            <!-- Option Tiếng Việt -->
+            <div class="lang-option-card p-4 rounded-2xl border-2 cursor-pointer transition-all flex items-center justify-between" id="lang-opt-vi" data-lang="vi">
+              <div class="flex items-center gap-3.5">
+                <span class="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center font-black text-sm border border-rose-100 shrink-0">VN</span>
+                <div>
+                  <h4 class="font-bold text-slate-900 text-sm">Tiếng Việt</h4>
+                  <p class="text-xs text-slate-500 mt-0.5">Việt hóa chuẩn xác, giao diện thân thiện & dễ dùng</p>
+                </div>
+              </div>
+              <div class="w-6 h-6 rounded-full border-2 border-slate-300 flex items-center justify-center lang-check-circle" id="check-lang-vi">
+                <i class="fa-solid fa-check text-xs text-white"></i>
+              </div>
+            </div>
+
+            <!-- Option English -->
+            <div class="lang-option-card p-4 rounded-2xl border-2 cursor-pointer transition-all flex items-center justify-between" id="lang-opt-en" data-lang="en">
+              <div class="flex items-center gap-3.5">
+                <span class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-black text-sm border border-blue-100 shrink-0">EN</span>
+                <div>
+                  <h4 class="font-bold text-slate-900 text-sm">English</h4>
+                  <p class="text-xs text-slate-500 mt-0.5">International standard terms: Board, Calendar, To-do</p>
+                </div>
+              </div>
+              <div class="w-6 h-6 rounded-full border-2 border-slate-300 flex items-center justify-center lang-check-circle" id="check-lang-en">
+                <i class="fa-solid fa-check text-xs text-white"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CARD 2: CÀI ĐẶT BẢO MẬT & MÃ PIN TÀI CHÍNH -->
+        <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-soft">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="card-icon-badge w-10 h-10 rounded-xl bg-amber-50 text-amber-600 border border-amber-100 flex items-center justify-center text-lg">
+              <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <div>
+              <h3 class="font-bold text-slate-900 text-sm" data-i18n="security_title">Bảo Mật Tài Chính Cá Nhân</h3>
+              <p class="text-xs text-slate-400" data-i18n="security_desc">Mã PIN 4 số dùng để khóa mờ số dư và lịch sử giao dịch nhạy cảm</p>
+            </div>
+          </div>
+
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-slate-50 border border-slate-200/80">
+            <div>
+              <p class="text-xs font-bold text-slate-800" data-i18n="current_pin_label">Mã PIN bảo vệ hiện tại</p>
+              <p class="text-xs text-slate-500 mt-0.5">Mặc định: <code class="bg-white px-2 py-0.5 rounded border font-bold text-blue-600" id="setting-display-pin">1234</code></p>
+            </div>
+            <div class="flex items-center gap-2">
+              <input type="password" id="input-new-pin" maxlength="6" placeholder="Mã PIN mới..." class="w-32 bg-white px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500">
+              <button id="btn-save-new-pin" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm" data-i18n="btn_change_pin">Đổi mã PIN</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- CARD 3: CHẾ ĐỘ GIAO DIỆN SÁNG / TỐI (THEME SYSTEM) -->
+        <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-soft">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="card-icon-badge w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100 flex items-center justify-center text-lg">
+              <i class="fa-solid fa-circle-half-stroke"></i>
+            </div>
+            <div>
+              <h3 class="font-bold text-slate-900 text-sm" data-i18n="theme_setting_title">Giao Diện Hệ Thống (Sáng / Tối)</h3>
+              <p class="text-xs text-slate-400" data-i18n="theme_setting_desc">Tùy biến hiển thị: Chế độ sáng ban ngày hoặc chế độ tối dịu mắt ban đêm</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <!-- Chế độ Sáng -->
+            <div class="theme-opt-card p-4 rounded-2xl border-2 cursor-pointer transition-all flex items-center justify-between" id="theme-opt-light" data-theme="light">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center text-xl shrink-0">
+                  <i class="fa-regular fa-sun"></i>
+                </div>
+                <div>
+                  <h4 class="font-bold text-slate-900 text-sm" data-i18n="theme_light_title">Giao diện Sáng</h4>
+                  <p class="text-xs text-slate-500 mt-0.5" data-i18n="theme_light_desc">Nền trắng tinh gọn, rõ ràng</p>
+                </div>
+              </div>
+              <div class="w-6 h-6 rounded-full border-2 border-slate-300 flex items-center justify-center theme-check-circle" id="check-theme-light">
+                <i class="fa-solid fa-check text-xs text-white"></i>
+              </div>
+            </div>
+
+            <!-- Chế độ Tối -->
+            <div class="theme-opt-card p-4 rounded-2xl border-2 cursor-pointer transition-all flex items-center justify-between" id="theme-opt-dark" data-theme="dark">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl shrink-0">
+                  <i class="fa-regular fa-moon"></i>
+                </div>
+                <div>
+                  <h4 class="font-bold text-slate-900 text-sm" data-i18n="theme_dark_title">Giao diện Tối</h4>
+                  <p class="text-xs text-slate-500 mt-0.5" data-i18n="theme_dark_desc">Nền than chì sang trọng, dịu mắt</p>
+                </div>
+              </div>
+              <div class="w-6 h-6 rounded-full border-2 border-slate-300 flex items-center justify-center theme-check-circle" id="check-theme-dark">
+                <i class="fa-solid fa-check text-xs text-white"></i>
+              </div>
+            </div>
+
+            <!-- Tự động (Hệ thống) -->
+            <div class="theme-opt-card p-4 rounded-2xl border-2 cursor-pointer transition-all flex items-center justify-between" id="theme-opt-system" data-theme="system">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center text-xl shrink-0">
+                  <i class="fa-solid fa-desktop"></i>
+                </div>
+                <div>
+                  <h4 class="font-bold text-slate-900 text-sm" data-i18n="theme_system_title">Tự động (Hệ thống)</h4>
+                  <p class="text-xs text-slate-500 mt-0.5" data-i18n="theme_system_desc">Theo cài đặt thiết bị của bạn</p>
+                </div>
+              </div>
+              <div class="w-6 h-6 rounded-full border-2 border-slate-300 flex items-center justify-center theme-check-circle" id="check-theme-system">
+                <i class="fa-solid fa-check text-xs text-white"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CARD 4: CẤU HÌNH AI COPILOT (GOOGLE GEMINI API) -->
+        <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-soft" id="setting-card-gemini">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 text-white flex items-center justify-center text-lg shadow-sm shrink-0">
+                <i class="fa-solid fa-wand-magic-sparkles text-amber-300"></i>
+              </div>
+              <div>
+                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <span>Trợ Lý AI Copilot (Google Gemini API)</span>
+                  <span id="gemini-status-badge" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">Chưa nhập Key</span>
+                </h3>
+                <p class="text-xs text-slate-400">Kết nối Gemini 1.5 Flash để bot tự động điều khiển mọi tác vụ trong app bằng ngôn ngữ tự nhiên</p>
+              </div>
+            </div>
+            <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" class="text-xs text-blue-600 hover:text-blue-800 hover:underline font-bold flex items-center gap-1 shrink-0 bg-blue-50 px-2.5 py-1.5 rounded-xl border border-blue-200">
+              <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i> Lấy API Key miễn phí
+            </a>
+          </div>
+
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-3">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-2.5">
+              <div class="relative flex-1">
+                <i class="fa-solid fa-key absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                <input type="password" id="input-gemini-api-key" placeholder="Dán Google Gemini API Key vào đây (AIzaSy...)..."
+                  class="w-full bg-white pl-9 pr-10 py-2.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-indigo-500 font-mono">
+                <button type="button" id="btn-toggle-gemini-key-vis" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs">
+                  <i class="fa-regular fa-eye" id="gemini-key-eye"></i>
+                </button>
+              </div>
+              <button id="btn-save-gemini-key" class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm shrink-0">
+                Lưu cấu hình
+              </button>
+              <button id="btn-test-gemini-key" class="px-3.5 py-2.5 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-xl text-xs font-bold transition-all shrink-0">
+                Kiểm tra kết nối
+              </button>
+            </div>
+            <div class="flex items-center justify-between text-[11px] text-slate-500 pt-1">
+              <span><i class="fa-solid fa-shield-halved text-emerald-500 mr-1"></i>Key được lưu an toàn cục bộ trong trình duyệt (LocalStorage).</span>
+              <span id="gemini-model-label" class="font-mono text-indigo-600 font-semibold">Model: gemini-3.8-flash</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  <!-- ================= MODAL THÊM GIAO DỊCH TÀI CHÍNH (ĐẦY ĐỦ NGÀY GIỜ & DANH MỤC) ================= -->
+  <div id="modal-transaction" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl border border-slate-100 animate-in">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <h4 class="font-bold text-slate-900 text-base flex items-center gap-2">
+          <i class="fa-solid fa-receipt text-blue-600"></i>
+          <span>Thêm Giao Dịch Mới</span>
+        </h4>
+        <button id="btn-close-modal" class="text-slate-400 hover:text-slate-700 p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+      
+      <form id="form-transaction" class="space-y-4 mt-4 text-xs">
+        <!-- Loại giao dịch -->
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1.5">Phân loại giao dịch</label>
+          <div class="grid grid-cols-2 gap-2.5">
+            <label class="flex items-center justify-center gap-2 p-2.5 rounded-xl border border-slate-200 cursor-pointer font-bold has-[:checked]:border-rose-500 has-[:checked]:bg-rose-50 has-[:checked]:text-rose-600 transition-all">
+              <input type="radio" name="trans-type" value="expense" checked class="hidden">
+              <i class="fa-solid fa-arrow-up-right"></i> Chi tiêu (-)
+            </label>
+            <label class="flex items-center justify-center gap-2 p-2.5 rounded-xl border border-slate-200 cursor-pointer font-bold has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-50 has-[:checked]:text-emerald-600 transition-all">
+              <input type="radio" name="trans-type" value="income" class="hidden">
+              <i class="fa-solid fa-arrow-down-left"></i> Thu nhập (+)
+            </label>
+          </div>
+        </div>
+
+        <!-- Tên khoản tiền -->
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Mô tả / Tên khoản tiền</label>
+          <input type="text" id="trans-title" placeholder="VD: Tiền trọ, Ăn tối, Lương dự án..." required class="w-full p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500">
+        </div>
+
+        <!-- Danh mục -->
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Danh mục</label>
+          <select id="trans-category" class="w-full p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500 bg-white">
+            <option value="Ăn uống">🍲 Ăn uống & Cà phê</option>
+            <option value="Nhà ở & Hóa đơn">🏠 Nhà ở, Điện nước, Internet</option>
+            <option value="Mua sắm">🛍️ Mua sắm & Đồ dùng</option>
+            <option value="Di chuyển">🚗 Xăng xe & Đi lại</option>
+            <option value="Học tập & Công việc">📚 Sách vở, Học tập & Công việc</option>
+            <option value="Giải trí">🎬 Xem phim, Du lịch & Giải trí</option>
+            <option value="Lương & Thưởng">💵 Lương, Thưởng & Thu nhập</option>
+            <option value="Khác">✨ Khác</option>
+          </select>
+        </div>
+
+        <!-- Số tiền (dùng text để hiện dấu chấm ngăn cách) -->
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Số tiền (VND)</label>
+          <div class="relative">
+            <input type="text" id="trans-amount" inputmode="numeric" placeholder="VD: 50.000" required
+              class="w-full p-2.5 pr-16 rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500 font-bold text-slate-800 tracking-wide"
+              autocomplete="off">
+            <span class="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">VND</span>
+          </div>
+          <p class="text-[11px] text-slate-400 mt-1"><i class="fa-solid fa-circle-info mr-1"></i>Nhập số tiền, dấu chấm sẽ tự xuất hiện (VD: 1.500.000)</p>
+        </div>
+
+        <!-- Ngày & Giờ giao dịch cụ thể -->
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Ngày & Giờ giao dịch</label>
+          <input type="datetime-local" id="trans-datetime" required class="w-full p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500 bg-white">
+        </div>
+
+        <!-- Nút thao tác -->
+        <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
+          <button type="button" id="btn-cancel-modal" class="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100 font-semibold transition-all">Hủy</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-md shadow-blue-500/20 active:scale-95 transition-all">Lưu giao dịch</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- SCRIPT LOGIC -->
+  <script src="app.js?v=20261108_clean_blank_acc_no_pomo"></script>
+
+  <!-- ================= MODAL ĐĂNG NHẬP TÀI CHÍNH ================= -->
+  <div id="modal-finance-login" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[60] flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-8 w-full max-w-sm shadow-2xl border border-slate-100 animate-in">
+      <!-- Header -->
+      <div class="text-center mb-6">
+        <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white text-2xl mx-auto mb-3 shadow-lg shadow-blue-500/30">
+          <i class="fa-solid fa-shield-halved"></i>
+        </div>
+        <h3 class="text-lg font-extrabold text-slate-900" data-i18n="login_modal_title">Xác thực Tài chính</h3>
+        <p class="text-xs text-slate-500 mt-1" data-i18n="login_modal_sub">Nhập mật khẩu để truy cập dữ liệu tài chính cá nhân của bạn</p>
+      </div>
+
+      <!-- Form login -->
+      <form id="form-finance-login" class="space-y-4">
+        <div class="relative">
+          <i class="fa-solid fa-lock absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+          <input type="password" id="finance-password-input" placeholder="Nhập mật khẩu..." required data-i18n-placeholder="placeholder_password"
+            class="w-full pl-10 pr-12 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-sm font-medium transition-all">
+          <button type="button" id="btn-toggle-pw-visibility" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 transition-colors">
+            <i class="fa-regular fa-eye text-sm" id="pw-eye-icon"></i>
+          </button>
+        </div>
+
+        <!-- Lỗi mật khẩu -->
+        <div id="login-error-msg" class="hidden p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 font-medium flex items-center gap-2">
+          <i class="fa-solid fa-circle-xmark text-rose-500"></i>
+          <span data-i18n="login_error_text">Mật khẩu không đúng! Vui lòng thử lại.</span>
+        </div>
+
+        <!-- Hint mật khẩu mặc định -->
+        <div class="p-2.5 rounded-xl bg-blue-50 border border-blue-100 text-xs text-blue-700 flex items-start gap-2">
+          <i class="fa-solid fa-circle-info text-blue-500 mt-0.5 shrink-0"></i>
+          <div>
+            <p class="font-semibold"><span data-i18n="login_hint_default">Mật khẩu hiện tại:</span> <span class="font-mono bg-white px-1.5 py-0.5 rounded border border-blue-200" id="login-modal-default-pin">1234</span></p>
+            <p class="text-blue-500 mt-0.5" data-i18n="login_hint_change">Bạn có thể đổi mật khẩu trong phần Cài đặt.</p>
+          </div>
+        </div>
+
+        <div class="flex gap-2.5 pt-1">
+          <button type="button" id="btn-cancel-finance-login" class="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 text-sm transition-all" data-i18n="btn_cancel">
+            Hủy bỏ
+          </button>
+          <button type="submit" class="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-md shadow-blue-500/20 active:scale-95 transition-all">
+            <i class="fa-solid fa-unlock-keyhole mr-1.5"></i><span data-i18n="btn_unlock_submit">Mở khóa</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= MODAL CHI TIẾT CÔNG VIỆC (THÊM MỚI / CHỈNH SỬA SÂU) ================= -->
+  <div id="modal-task-detail" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-6 md:p-7 w-full max-w-xl shadow-2xl border border-slate-100 max-h-[92vh] overflow-y-auto animate-in">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div class="flex items-center gap-2.5">
+          <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-base">
+            <i class="fa-solid fa-pen-to-square"></i>
+          </div>
+          <div>
+            <h4 class="font-bold text-slate-900 text-sm" id="modal-task-detail-heading">Tạo Công Việc Mới</h4>
+            <p class="text-[11px] text-slate-400">Tinh chỉnh dự án, mức ưu tiên, hạn chót và checklist con</p>
+          </div>
+        </div>
+        <button id="btn-close-task-detail-modal" class="text-slate-400 hover:text-slate-700 p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+
+      <form id="form-task-detail" class="space-y-4 mt-4 text-xs">
+        <input type="hidden" id="task-detail-id">
+
+        <!-- Tiêu đề công việc -->
+        <div>
+          <label class="block text-slate-700 font-bold mb-1.5">Tên công việc <span class="text-rose-500">*</span></label>
+          <input type="text" id="task-detail-title" placeholder="VD: Nghiên cứu kiến trúc AI Agent, Hoàn thành báo cáo tuần..." required
+            class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 font-medium focus:outline-none focus:border-indigo-500 focus:bg-white transition-all">
+        </div>
+
+        <!-- 2 Cột: Dự án & Mức ưu tiên -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <label class="block text-slate-700 dark:text-slate-200 font-bold text-xs" data-i18n="task_project_label">Dự án / Phân loại</label>
+              <button type="button" id="btn-add-custom-project" class="text-[11px] text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 font-semibold flex items-center gap-1 hover:underline cursor-pointer" title="Tự thêm phân loại theo nhu cầu của bạn">
+                <i class="fa-solid fa-plus text-[10px]"></i> <span data-i18n="add_new_category">Thêm mới</span>
+              </button>
+            </div>
+            <select id="task-detail-project" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500">
+              <!-- JS rendered -->
+            </select>
+          </div>
+          <div>
+            <label class="block text-slate-700 dark:text-slate-200 font-bold mb-1.5 text-xs">Mức độ ưu tiên</label>
+            <select id="task-detail-priority" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:border-indigo-500">
+              <option value="urgent">🔴 Khẩn cấp (Gấp)</option>
+              <option value="high" selected>🟠 Cao</option>
+              <option value="medium">🟡 Trung bình</option>
+              <option value="low">🔵 Thấp</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 3 Cột: Trạng thái, Hạn chót & Giờ lịch biểu -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div>
+            <label class="block text-slate-700 font-bold mb-1.5">Trạng thái tiến độ</label>
+            <select id="task-detail-status" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:border-indigo-500">
+              <option value="todo">⚪ Chưa bắt đầu (To Do)</option>
+              <option value="doing">🔵 Đang thực hiện (In Progress)</option>
+              <option value="pending">🟡 Tạm hoãn / Chờ review</option>
+              <option value="done">🟢 Đã hoàn thành (Done)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-slate-700 font-bold mb-1.5">Thời hạn (Deadline)</label>
+            <input type="datetime-local" id="task-detail-deadline" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:outline-none focus:border-indigo-500">
+          </div>
+          <div>
+            <label class="block text-slate-700 font-bold mb-1.5">Giờ biểu diễn trên lịch</label>
+            <select id="task-detail-hour" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:border-indigo-500">
+              <option value="allday">Cả ngày (All day)</option>
+              <option value="6">06:00 (Sáng)</option>
+              <option value="7">07:00 (Sáng)</option>
+              <option value="8">08:00 (Sáng)</option>
+              <option value="9">09:00 (Sáng)</option>
+              <option value="10">10:00 (Sáng)</option>
+              <option value="11">11:00 (Trưa)</option>
+              <option value="12">12:00 (Trưa)</option>
+              <option value="13">13:00 (Chiều)</option>
+              <option value="14">14:00 (Chiều)</option>
+              <option value="15">15:00 (Chiều)</option>
+              <option value="16">16:00 (Chiều)</option>
+              <option value="17">17:00 (Chiều)</option>
+              <option value="18">18:00 (Tối)</option>
+              <option value="19">19:00 (Tối)</option>
+              <option value="20">20:00 (Tối)</option>
+              <option value="21">21:00 (Tối)</option>
+              <option value="22">22:00 (Đêm)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Ước tính Pomodoro -->
+        <div>
+          <label class="block text-slate-700 font-bold mb-1.5">Ước lượng phiên Pomodoro (25 phút/phiên)</label>
+          <div class="flex items-center gap-2">
+            <input type="number" id="task-detail-pomodoros" min="1" max="20" value="2" class="w-24 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-center focus:outline-none focus:border-indigo-500">
+            <span class="text-slate-500 text-[11px]" id="task-detail-pomodoro-hint">≈ 50 phút tập trung</span>
+          </div>
+        </div>
+
+        <!-- Mô tả chi tiết -->
+        <div>
+          <label class="block text-slate-700 font-bold mb-1.5">Mô tả / Ghi chú công việc</label>
+          <textarea id="task-detail-desc" rows="2" placeholder="Ghi chú chi tiết mục tiêu cần đạt, link tài liệu hoặc yêu cầu cụ thể..."
+            class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-800 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all"></textarea>
+        </div>
+
+        <!-- Checklist con (Subtasks) -->
+        <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80">
+          <div class="flex items-center justify-between mb-2">
+            <label class="font-bold text-slate-800 flex items-center gap-1.5">
+              <i class="fa-solid fa-list-ol text-indigo-600"></i>
+              <span>Danh sách công việc con (Checklist)</span>
+            </label>
+            <span class="text-[11px] text-slate-400" id="task-subtasks-count">0 mục</span>
+          </div>
+
+          <!-- Danh sách subtasks hiện tại -->
+          <div id="task-subtasks-list" class="space-y-1.5 mb-2.5 max-h-36 overflow-y-auto">
+            <!-- JS rendered subtask items -->
+          </div>
+
+          <!-- Input thêm nhanh subtask -->
+          <div class="flex gap-2">
+            <input type="text" id="input-new-subtask" placeholder="Thêm bước thực hiện con..." class="flex-1 bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-indigo-500">
+            <button type="button" id="btn-add-subtask-item" class="px-3 py-1.5 rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100 font-semibold text-xs transition-colors">
+              + Thêm bước
+            </button>
+          </div>
+        </div>
+
+        <!-- Nút hành động -->
+        <div class="flex items-center justify-between pt-3 border-t border-slate-100">
+          <button type="button" id="btn-delete-task-in-modal" class="text-rose-600 hover:text-rose-700 hover:bg-rose-50 px-3 py-2 rounded-xl text-xs font-semibold transition-all hidden">
+            <i class="fa-solid fa-trash-can mr-1"></i>Xóa công việc
+          </button>
+          <div class="flex items-center gap-2 ml-auto">
+            <button type="button" id="btn-cancel-task-detail" class="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100 font-semibold text-xs transition-colors">Hủy</button>
+            <button type="submit" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-600/20 active:scale-95 transition-all">
+              <i class="fa-solid fa-floppy-disk mr-1.5"></i>Lưu công việc
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= MODAL CÀI ĐẶT MỤC TIÊU NGÀY & GIỜ CHỐT SỔ ================= -->
+  <div id="modal-task-settings" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-6 md:p-7 w-full max-w-md shadow-2xl border border-slate-100 animate-in">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div class="flex items-center gap-2.5">
+          <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-base">
+            <i class="fa-solid fa-hourglass-half"></i>
+          </div>
+          <div>
+            <h4 class="font-bold text-slate-900 text-sm">Tinh Chỉnh Mục Tiêu Ngày</h4>
+            <p class="text-[11px] text-slate-400">Tùy biến giờ chốt sổ và chỉ tiêu năng suất cá nhân</p>
+          </div>
+        </div>
+        <button id="btn-close-task-settings" class="text-slate-400 hover:text-slate-700 p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+
+      <form id="form-task-settings" class="space-y-4 mt-4 text-xs">
+        <!-- Giờ chốt sổ trong ngày -->
+        <div>
+          <label class="block text-slate-700 font-bold mb-1.5">
+            <i class="fa-regular fa-clock text-amber-500 mr-1"></i>Giờ chốt sổ công việc hôm nay
+          </label>
+          <input type="time" id="setting-task-cutoff" value="22:00" required
+            class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 font-bold focus:outline-none focus:border-amber-500 focus:bg-white transition-all">
+          <p class="text-[11px] text-slate-400 mt-1">Đồng hồ đếm ngược trên Dashboard sẽ tự động tính đến thời điểm này.</p>
+        </div>
+
+        <!-- Chỉ tiêu số việc hoàn thành -->
+        <div>
+          <label class="block text-slate-700 font-bold mb-1.5">
+            <i class="fa-solid fa-bullseye text-indigo-500 mr-1"></i>Chỉ tiêu công việc cần xong mỗi ngày
+          </label>
+          <div class="flex items-center gap-3">
+            <input type="number" id="setting-task-target" min="1" max="30" value="5" required
+              class="w-28 bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs font-black text-center focus:outline-none focus:border-indigo-500">
+            <span class="text-slate-600 font-semibold">nhiệm vụ / ngày</span>
+          </div>
+        </div>
+
+        <!-- Phiên Pomodoro -->
+        <div>
+          <label class="block text-slate-700 font-bold mb-1.5">
+            <i class="fa-solid fa-stopwatch text-blue-500 mr-1"></i>Thời lượng phiên tập trung ưa thích
+          </label>
+          <select id="setting-task-pomo-len" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:border-blue-500">
+            <option value="25" selected>25 phút (Chuẩn Pomodoro)</option>
+            <option value="45">45 phút (Tập trung sâu 1 tiết học)</option>
+            <option value="50">50 phút (Chuyên gia công nghệ)</option>
+          </select>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
+          <button type="button" id="btn-cancel-task-settings" class="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100 font-semibold text-xs">Hủy</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs shadow-md shadow-amber-500/20 active:scale-95 transition-all">
+            Lưu cài đặt
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= MODAL TẠO DỰ ÁN MỚI ================= -->
+  <div id="modal-add-project" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl border border-slate-100 animate-in">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div class="flex items-center gap-2.5">
+          <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-base">
+            <i class="fa-solid fa-folder-plus"></i>
+          </div>
+          <div>
+            <h4 class="font-bold text-slate-900 text-sm">Thêm Dự Án / Nhóm Việc</h4>
+            <p class="text-[11px] text-slate-400">Phân loại nhiệm vụ theo mục tiêu dự án cụ thể</p>
+          </div>
+        </div>
+        <button id="btn-close-add-project" class="text-slate-400 hover:text-slate-700 p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+
+      <form id="form-add-project" class="space-y-4 mt-4 text-xs">
+        <div>
+          <label class="block text-slate-700 font-bold mb-1.5">Tên dự án mới <span class="text-rose-500">*</span></label>
+          <input type="text" id="input-new-project-name" placeholder="VD: Khóa học AI Agent, App Mobile, Đồ án..." required
+            class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 font-medium focus:outline-none focus:border-indigo-500 focus:bg-white transition-all">
+        </div>
+
+        <div>
+          <label class="block text-slate-700 font-bold mb-1.5">Màu sắc đại diện</label>
+          <div class="grid grid-cols-4 gap-2" id="project-color-picker">
+            <label class="flex items-center gap-2 p-2 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50">
+              <input type="radio" name="project-color" value="bg-indigo-100 text-indigo-700 border-indigo-200" checked class="w-3.5 h-3.5 text-indigo-600">
+              <span class="w-3.5 h-3.5 rounded-full bg-indigo-500"></span>
+              <span class="font-semibold text-[11px]">Tím</span>
+            </label>
+            <label class="flex items-center gap-2 p-2 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50">
+              <input type="radio" name="project-color" value="bg-blue-100 text-blue-700 border-blue-200" class="w-3.5 h-3.5 text-blue-600">
+              <span class="w-3.5 h-3.5 rounded-full bg-blue-500"></span>
+              <span class="font-semibold text-[11px]">Lam</span>
+            </label>
+            <label class="flex items-center gap-2 p-2 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50">
+              <input type="radio" name="project-color" value="bg-emerald-100 text-emerald-700 border-emerald-200" class="w-3.5 h-3.5 text-emerald-600">
+              <span class="w-3.5 h-3.5 rounded-full bg-emerald-500"></span>
+              <span class="font-semibold text-[11px]">Lục</span>
+            </label>
+            <label class="flex items-center gap-2 p-2 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50">
+              <input type="radio" name="project-color" value="bg-amber-100 text-amber-700 border-amber-200" class="w-3.5 h-3.5 text-amber-600">
+              <span class="w-3.5 h-3.5 rounded-full bg-amber-500"></span>
+              <span class="font-semibold text-[11px]">Cam</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
+          <button type="button" id="btn-cancel-add-project" class="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100 font-semibold text-xs">Hủy</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-600/20 active:scale-95 transition-all">
+            Tạo dự án
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= MODAL HƯỚNG DẪN SỬ DỤNG NHANH & MẸO NĂNG SUẤT (BILINGUAL) ================= -->
+  <div id="modal-user-guide" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[65] flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-6 md:p-8 w-full max-w-2xl shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto animate-in">
+      <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-500 flex items-center justify-center text-white text-xl shadow-lg shadow-amber-500/25">
+            <i class="fa-solid fa-lightbulb"></i>
+          </div>
+          <div>
+            <h3 class="text-lg font-extrabold text-slate-900" id="guide-modal-title">Hướng Dẫn Sử Dụng & Mẹo Năng Suất MyLife</h3>
+            <p class="text-xs text-slate-500" id="guide-modal-subtitle">Cẩm nang nhanh giúp bạn làm chủ không gian làm việc và tối ưu hóa thời gian</p>
+          </div>
+        </div>
+        <button id="btn-close-guide" class="text-slate-400 hover:text-slate-700 p-2 rounded-xl hover:bg-slate-100 transition-colors">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <!-- Grid hướng dẫn 4 tính năng chính (Bilingual content populated by JS) -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 my-5 text-xs" id="guide-modal-body-grid">
+        <!-- JS rendered cards for Finance, Tasks/Calendar, Pomodoro, Digest -->
+      </div>
+
+      <div class="p-3.5 bg-amber-50 rounded-2xl border border-amber-200 text-xs text-amber-900 flex items-start gap-2.5">
+        <i class="fa-solid fa-circle-question text-amber-600 mt-0.5 shrink-0 text-sm"></i>
+        <div id="guide-modal-pro-tip">
+          <b>Mẹo hữu ích:</b> Bất cứ thẻ nào có biểu tượng dấu chấm hỏi <i class="fa-regular fa-circle-question text-indigo-600"></i>, bạn chỉ cần bấm vào để xem gợi ý thao tác nhanh cho riêng mục đó!
+        </div>
+      </div>
+
+      <div class="flex justify-end pt-5">
+        <button id="btn-understood-guide" class="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-md shadow-blue-500/20 active:scale-95 transition-all">
+          <span id="guide-btn-understood-text">Đã hiểu, bắt đầu dùng ngay!</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL CÀI ĐẶT CHỦ ĐỀ TIN TỨC YÊU THÍCH ================= -->
+  <div id="modal-news-settings" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[65] flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-6 md:p-7 w-full max-w-md shadow-2xl border border-slate-100 animate-in">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div class="flex items-center gap-2.5">
+          <div class="w-10 h-10 rounded-xl bg-slate-100 text-slate-800 flex items-center justify-center font-bold">
+            <i class="fa-solid fa-sliders"></i>
+          </div>
+          <div>
+            <h4 class="font-bold text-slate-900 text-sm" data-i18n="news_modal_title">Tùy Chọn Chủ Đề Tin Tức</h4>
+            <p class="text-[11px] text-slate-400" data-i18n="news_modal_sub">Chọn các nguồn tin bạn muốn ưu tiên hiển thị</p>
+          </div>
+        </div>
+        <button id="btn-close-news-settings" class="text-slate-400 hover:text-slate-700 p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+
+      <div class="space-y-2.5 my-4 text-xs" id="news-topics-checkboxes">
+        <label class="flex items-center justify-between p-3 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer transition-colors">
+          <span class="flex items-center gap-2.5 font-semibold text-slate-800">
+            <span class="w-7 h-7 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center text-xs">⭐</span>
+            <span data-i18n="news_topic_top_label">Tin Tiêu Điểm & Thời Sự Chính</span>
+          </span>
+          <input type="checkbox" value="top" checked class="news-pref-checkbox w-4 h-4 text-blue-600 rounded border-slate-300">
+        </label>
+        <label class="flex items-center justify-between p-3 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer transition-colors">
+          <span class="flex items-center gap-2.5 font-semibold text-slate-800">
+            <span class="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center text-xs">💻</span>
+            <span data-i18n="news_topic_tech_label">Công Nghệ, AI & Lập Trình</span>
+          </span>
+          <input type="checkbox" value="tech" checked class="news-pref-checkbox w-4 h-4 text-blue-600 rounded border-slate-300">
+        </label>
+        <label class="flex items-center justify-between p-3 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer transition-colors">
+          <span class="flex items-center gap-2.5 font-semibold text-slate-800">
+            <span class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs">📈</span>
+            <span data-i18n="news_topic_economy_label">Kinh Tế, Tài Chính & Đầu Tư</span>
+          </span>
+          <input type="checkbox" value="economy" checked class="news-pref-checkbox w-4 h-4 text-blue-600 rounded border-slate-300">
+        </label>
+        <label class="flex items-center justify-between p-3 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer transition-colors">
+          <span class="flex items-center gap-2.5 font-semibold text-slate-800">
+            <span class="w-7 h-7 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center text-xs">🌿</span>
+            <span data-i18n="news_topic_life_label">Đời Sống, Sức Khỏe & Xã Hội</span>
+          </span>
+          <input type="checkbox" value="life" checked class="news-pref-checkbox w-4 h-4 text-blue-600 rounded border-slate-300">
+        </label>
+      </div>
+
+      <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
+        <button type="button" id="btn-cancel-news-settings" class="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100 font-semibold text-xs" data-i18n="btn_cancel">Hủy</button>
+        <button type="button" id="btn-save-news-settings" class="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md shadow-blue-500/20 active:scale-95 transition-all" data-i18n="btn_save_pref">Lưu tùy chọn</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL GHI NHẬN SỨC KHỎE NHANH ================= -->
+  <div id="modal-health-log" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[65] flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-6 md:p-7 w-full max-w-md shadow-2xl border border-slate-100 animate-in">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div class="flex items-center gap-2.5">
+          <div id="modal-health-log-icon" class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
+            <i class="fa-solid fa-notes-medical"></i>
+          </div>
+          <div>
+            <h4 id="modal-health-log-title" class="font-bold text-slate-900 dark:text-white text-sm">Ghi Nhận Chỉ Số Sức Khỏe</h4>
+            <p id="modal-health-log-subtitle" class="text-[11px] text-slate-400">Cập nhật nhanh bước chân, lượng nước và giấc ngủ</p>
+          </div>
+        </div>
+        <button id="btn-close-health-log" class="text-slate-400 hover:text-slate-700 p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+
+      <!-- TAB CHUYỂN CHẾ ĐỘ NHẬP RIÊNG BIỆT (KHÔNG BỊ RỐI) -->
+      <div class="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl text-xs font-bold my-3" id="modal-health-tabs-row">
+        <button type="button" id="tab-log-mode-steps" class="flex-1 py-1.5 px-2 rounded-xl transition-all text-center flex items-center justify-center gap-1">
+          <i class="fa-solid fa-person-walking text-emerald-500"></i>
+          <span data-i18n="tab_log_steps">Bước chân</span>
+        </button>
+        <button type="button" id="tab-log-mode-water" class="flex-1 py-1.5 px-2 rounded-xl transition-all text-center flex items-center justify-center gap-1">
+          <i class="fa-solid fa-glass-water text-sky-500"></i>
+          <span data-i18n="tab_log_water">Nước uống</span>
+        </button>
+        <button type="button" id="tab-log-mode-sleep" class="flex-1 py-1.5 px-2 rounded-xl transition-all text-center flex items-center justify-center gap-1">
+          <i class="fa-solid fa-moon text-indigo-500"></i>
+          <span data-i18n="tab_log_sleep">Giấc ngủ</span>
+        </button>
+        <button type="button" id="tab-log-mode-all" class="flex-1 py-1.5 px-2 rounded-xl transition-all text-center flex items-center justify-center gap-1">
+          <i class="fa-solid fa-list-check text-slate-500"></i>
+          <span data-i18n="tab_log_all">Tất cả</span>
+        </button>
+      </div>
+
+      <form id="form-health-log" class="space-y-4 my-3 text-xs">
+        <!-- 1. Chọn ngày ghi nhận chỉ số (Luôn hiển thị) -->
+        <div id="group-log-date">
+          <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+            <i class="fa-regular fa-calendar-days text-emerald-500 mr-1"></i><span data-i18n="lbl_log_date">Ngày ghi nhận chỉ số</span>
+          </label>
+          <input type="date" id="input-log-date" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 cursor-pointer">
+        </div>
+
+        <!-- 2. Thêm bước chân -->
+        <div id="group-log-steps">
+          <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+            <i class="fa-solid fa-person-walking text-emerald-500 mr-1"></i><span data-i18n="lbl_log_steps">Số bước chân trong ngày</span>
+          </label>
+          <div class="flex gap-2">
+            <input type="number" id="input-log-steps" placeholder="VD: 8000" min="0" step="100"
+              class="flex-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500">
+            <button type="button" class="btn-quick-add-step-input px-3 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-bold" data-val="500">+500</button>
+            <button type="button" class="btn-quick-add-step-input px-3 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-bold" data-val="1000">+1K</button>
+            <button type="button" class="btn-quick-add-step-input px-3 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-bold" data-val="2000">+2K</button>
+          </div>
+        </div>
+
+        <!-- 3. Thêm nước uống -->
+        <div id="group-log-water">
+          <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+            <i class="fa-solid fa-glass-water text-sky-500 mr-1"></i><span data-i18n="lbl_log_water">Lượng nước uống (ml)</span>
+          </label>
+          <div class="flex gap-2">
+            <input type="number" id="input-log-water" placeholder="VD: 2000" min="0" step="50"
+              class="flex-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-sky-500">
+            <button type="button" class="btn-quick-add-water-input px-3 py-2 rounded-xl bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 font-bold" data-val="250">+250ml</button>
+            <button type="button" class="btn-quick-add-water-input px-3 py-2 rounded-xl bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 font-bold" data-val="500">+500ml</button>
+          </div>
+        </div>
+
+        <!-- 4. Cập nhật giấc ngủ -->
+        <div id="group-log-sleep" class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 space-y-2.5">
+          <label class="block font-bold text-slate-800 dark:text-slate-200">
+            <i class="fa-solid fa-moon text-indigo-500 mr-1"></i><span data-i18n="lbl_log_sleep">Giấc ngủ & Chu kỳ 90 phút</span>
+          </label>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <span class="text-[10px] text-slate-500 dark:text-slate-400 block mb-0.5" data-i18n="lbl_bedtime">Giờ đi ngủ:</span>
+              <input type="time" id="input-log-bedtime" value="23:00" class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-slate-900 dark:text-white">
+            </div>
+            <div>
+              <span class="text-[10px] text-slate-500 dark:text-slate-400 block mb-0.5" data-i18n="lbl_waketime">Giờ thức dậy:</span>
+              <input type="time" id="input-log-waketime" value="06:30" class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-slate-900 dark:text-white">
+            </div>
+          </div>
+          <div class="pt-1.5 border-t border-slate-200/60 dark:border-slate-700/60">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-[10px] text-slate-500 dark:text-slate-400 font-bold" data-i18n="lbl_total_sleep">Tổng số giờ ngủ:</span>
+              <div class="flex items-center gap-1.5 w-32">
+                <input type="number" id="input-log-sleep-hours" placeholder="VD: 7.5" min="0" max="24" step="0.5" value="7.5"
+                  class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2 py-1 text-xs font-bold text-indigo-600 dark:text-indigo-400 text-center focus:outline-none focus:border-indigo-500">
+                <span class="text-[10px] font-bold text-slate-500" id="lbl-unit-hours">giờ</span>
+              </div>
+            </div>
+            <p class="text-[10px] text-indigo-600 dark:text-indigo-400 font-semibold mt-1" id="input-log-sleep-eval-preview">
+              ⭐ Đạt 5 chu kỳ 90 phút (Chuẩn khoa học)
+            </p>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+          <button type="button" id="btn-cancel-health-log" class="px-4 py-2 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold text-xs" data-i18n="btn_cancel">Hủy</button>
+          <button type="submit" id="btn-submit-health-log" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-600/20 active:scale-95 transition-all" data-i18n="btn_save_health">Lưu chỉ số</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= MODAL CÀI ĐẶT MỤC TIÊU SỨC KHỎE ================= -->
+  <div id="modal-health-settings" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[65] flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-6 md:p-7 w-full max-w-md shadow-2xl border border-slate-100 animate-in">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div class="flex items-center gap-2.5">
+          <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+            <i class="fa-solid fa-sliders"></i>
+          </div>
+          <div>
+            <h4 class="font-bold text-slate-900 text-sm">Cài Đặt Mục Tiêu Sức Khỏe</h4>
+            <p class="text-[11px] text-slate-400">Tùy biến chỉ tiêu vận động, nước uống & giờ ngủ</p>
+          </div>
+        </div>
+        <button id="btn-close-health-settings" class="text-slate-400 hover:text-slate-700 p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+
+      <form id="form-health-settings" class="space-y-4 my-4 text-xs">
+        <!-- Mục tiêu bước -->
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">
+            <i class="fa-solid fa-person-walking text-emerald-500 mr-1"></i>Mục tiêu bước chân mỗi ngày
+          </label>
+          <div class="flex items-center gap-2">
+            <input type="number" id="setting-health-steps-target" value="10000" min="2000" max="30000" step="500" required
+              class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 focus:outline-none focus:border-emerald-500">
+            <span class="text-slate-500 font-semibold shrink-0">bước/ngày</span>
+          </div>
+        </div>
+
+        <!-- Mục tiêu nước -->
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">
+            <i class="fa-solid fa-glass-water text-sky-500 mr-1"></i>Mục tiêu lượng nước uống mỗi ngày (ml)
+          </label>
+          <div class="flex items-center gap-2">
+            <input type="number" id="setting-health-water-target" value="2000" min="1000" max="5000" step="250" required
+              class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 focus:outline-none focus:border-sky-500">
+            <span class="text-slate-500 font-semibold shrink-0">ml/ngày</span>
+          </div>
+        </div>
+
+        <!-- Giờ ngủ mục tiêu -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">
+              <i class="fa-solid fa-moon text-indigo-500 mr-1"></i>Giờ ngủ lý tưởng
+            </label>
+            <input type="time" id="setting-health-bedtime" value="22:30" required
+              class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 focus:outline-none focus:border-indigo-500">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">
+              <i class="fa-regular fa-sun text-amber-500 mr-1"></i>Giờ thức dậy
+            </label>
+            <input type="time" id="setting-health-waketime" value="06:00" required
+              class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 focus:outline-none focus:border-amber-500">
+          </div>
+        </div>
+
+        <!-- Cấu hình nhắc nhở -->
+        <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-2.5">
+          <span class="font-bold text-slate-800 block mb-1">Cấu hình thông báo nhắc nhở</span>
+          <label class="flex items-center justify-between cursor-pointer">
+            <span class="text-slate-700">💧 Nhắc nhở uống nước tự động</span>
+            <input type="checkbox" id="setting-health-water-reminder-check" checked class="w-4 h-4 text-sky-600 rounded">
+          </label>
+          <label class="flex items-center justify-between cursor-pointer">
+            <span class="text-slate-700">🌙 Nhắc nhở tắt màn hình & đi ngủ sớm</span>
+            <input type="checkbox" id="setting-health-sleep-reminder-check" checked class="w-4 h-4 text-indigo-600 rounded">
+          </label>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
+          <button type="button" id="btn-cancel-health-settings" class="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100 font-semibold text-xs">Hủy</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-600/20 active:scale-95 transition-all">Lưu cài đặt</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= TOAST GỢI Ý NHANH (HINT POPUP) ================= -->
+  <div id="hint-toast" class="hidden fixed bottom-6 right-6 max-w-sm bg-slate-900 text-white rounded-2xl p-4 shadow-2xl border border-slate-700 z-[70] transition-all duration-300">
+    <div class="flex items-start gap-3">
+      <div class="w-8 h-8 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center shrink-0 mt-0.5">
+        <i class="fa-solid fa-circle-info text-sm"></i>
+      </div>
+      <div class="flex-1">
+        <h5 class="font-bold text-xs text-white mb-0.5">Mẹo Sử Dụng</h5>
+        <p id="hint-toast-text" class="text-xs text-slate-300 leading-relaxed"></p>
+      </div>
+      <button id="btn-close-hint-toast" class="text-slate-400 hover:text-white p-1">
+        <i class="fa-solid fa-xmark text-xs"></i>
+      </button>
+    </div>
+  </div>
+
+
+  <!-- ================= MODAL BÁO CÁO TIẾN ĐỘ CÔNG VIỆC (TASK PROGRESS REPORT) ================= -->
+  <div id="modal-task-progress-report" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[70] flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-6 md:p-8 w-full max-w-2xl shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto animate-in">
+      
+      <!-- Header Modal -->
+      <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-white text-xl shadow-lg shadow-cyan-500/25">
+            <i class="fa-solid fa-chart-pie"></i>
+          </div>
+          <div>
+            <h3 class="text-lg font-extrabold text-slate-900" id="task-report-modal-title">Báo Cáo Tiến Độ Công Việc & Năng Suất</h3>
+            <p class="text-xs text-slate-500" id="task-report-modal-subtitle">Tổng hợp tiến độ thời gian thực, nhiệm vụ đã xong và khối lượng công việc hiện tại</p>
+          </div>
+        </div>
+        <button id="btn-close-task-report" class="text-slate-400 hover:text-slate-700 p-2 rounded-xl hover:bg-slate-100 transition-colors">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <!-- Report Body Content (Dynamic JS Rendering) -->
+      <div id="task-report-modal-body" class="my-5 space-y-5 text-xs">
+        <!-- Rendered by renderTaskProgressReport() -->
+      </div>
+
+      <!-- Footer Actions -->
+      <div class="flex items-center justify-between pt-4 border-t border-slate-100 text-xs">
+        <span class="text-slate-400 italic" id="task-report-timestamp">Thời điểm: Hôm nay</span>
+        <button id="btn-understood-task-report" class="px-5 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-700 text-white font-bold shadow-md shadow-cyan-600/20 active:scale-95 transition-all">
+          <span id="task-report-btn-close-text">Đóng báo cáo</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ================= MODAL ĐĂNG NHẬP / THÊM TÀI KHOẢN MỚI (TỐI ĐA 20 TÀI KHOẢN) ================= -->
+  <div id="modal-add-account" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[70] flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 md:p-7 w-full max-w-md shadow-2xl border-2 border-slate-900 animate-in font-['Nunito']">
+      <div class="flex items-center justify-between pb-3 border-b-2 border-slate-900 dark:border-slate-700">
+        <div class="flex items-center gap-2.5">
+          <div class="w-10 h-10 rounded-xl bg-teal-50 dark:bg-teal-950/60 text-teal-600 dark:text-teal-400 flex items-center justify-center font-bold text-base border-2 border-slate-900 shadow-[1px_1px_0px_#1e293b]">
+            <i class="fa-solid fa-user-plus"></i>
+          </div>
+          <div>
+            <h4 class="font-extrabold text-slate-900 dark:text-white text-sm" data-i18n="acc_modal_add_title">Đăng Nhập Tài Khoản Mới</h4>
+            <p class="text-[11px] text-slate-500 dark:text-slate-400 font-semibold" data-i18n="acc_modal_add_sub">Hỗ trợ lưu &amp; chuyển đổi tối đa 20 tài khoản</p>
+          </div>
+        </div>
+        <button id="btn-close-add-account-modal" class="text-slate-400 hover:text-slate-700 dark:hover:text-white p-1 text-base"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <form id="form-add-account" class="space-y-3.5 my-3.5 text-xs">
+        <!-- Họ và tên -->
+        <div>
+          <label class="block font-black text-slate-700 dark:text-slate-200 mb-1" data-i18n="acc_label_fullname">Họ và tên người dùng <span class="text-rose-500">*</span></label>
+          <input type="text" id="input-acc-name" placeholder="VD: Hoàng Nam, Thu Trang..." required autocomplete="name"
+            class="w-full bg-slate-50 dark:bg-slate-800 border-2 border-slate-900 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:bg-white dark:focus:bg-slate-700 transition-all">
+        </div>
+
+        <!-- Email / Tên đăng nhập -->
+        <div>
+          <label class="block font-black text-slate-700 dark:text-slate-200 mb-1" data-i18n="acc_label_email">Email hoặc Tên đăng nhập <span class="text-rose-500">*</span></label>
+          <input type="text" id="input-acc-email" placeholder="VD: hoangnam.work@mylife.vn" required autocomplete="username"
+            class="w-full bg-slate-50 dark:bg-slate-800 border-2 border-slate-900 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:bg-white dark:focus:bg-slate-700 transition-all">
+        </div>
+
+        <!-- Mật khẩu / PIN bảo vệ -->
+        <div>
+          <label class="block font-black text-slate-700 dark:text-slate-200 mb-1" data-i18n="acc_label_password">Mật khẩu hoặc Mã PIN bảo vệ <span class="text-rose-500">*</span></label>
+          <input type="password" id="input-acc-password" placeholder="Tối thiểu 4 ký tự/số để bảo vệ tài khoản" required minlength="4" autocomplete="new-password"
+            class="w-full bg-slate-50 dark:bg-slate-800 border-2 border-slate-900 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:bg-white dark:focus:bg-slate-700 transition-all">
+          <p class="text-[10px] text-slate-400 mt-1" data-i18n="acc_help_password">Mật khẩu này dùng để ngăn người khác tự ý truy cập hoặc chuyển sang tài khoản của bạn.</p>
+        </div>
+
+        <!-- Vai trò & Màu Avatar -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-black text-slate-700 dark:text-slate-200 mb-1" data-i18n="acc_label_role">Vai trò</label>
+            <select id="select-acc-role" class="w-full bg-slate-50 dark:bg-slate-800 border-2 border-slate-900 dark:border-slate-700 rounded-xl px-2.5 py-2 text-xs font-bold text-slate-900 dark:text-white focus:outline-none cursor-pointer">
+              <option value="Chủ sở hữu">👑 Chủ sở hữu (Owner)</option>
+              <option value="Quản trị viên">⚡ Quản trị viên (Admin)</option>
+              <option value="Thành viên" selected>💼 Thành viên (Member)</option>
+              <option value="Cá nhân">🌿 Cá nhân (Personal)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-black text-slate-700 dark:text-slate-200 mb-1" data-i18n="acc_label_color">Màu Avatar</label>
+            <div class="flex items-center gap-1.5 pt-1" id="acc-avatar-color-picker">
+              <button type="button" class="color-picker-dot w-6 h-6 rounded-lg bg-[#f25c54] border-2 border-slate-900 shadow-[1px_1px_0px_#1e293b] active:scale-95" data-color="#f25c54"></button>
+              <button type="button" class="color-picker-dot w-6 h-6 rounded-lg bg-[#2a9d8f] border-2 border-slate-900 shadow-[1px_1px_0px_#1e293b] active:scale-95" data-color="#2a9d8f"></button>
+              <button type="button" class="color-picker-dot w-6 h-6 rounded-lg bg-[#4361ee] border-2 border-slate-900 shadow-[1px_1px_0px_#1e293b] ring-2 ring-indigo-500 active:scale-95 selected" data-color="#4361ee"></button>
+              <button type="button" class="color-picker-dot w-6 h-6 rounded-lg bg-[#f59e0b] border-2 border-slate-900 shadow-[1px_1px_0px_#1e293b] active:scale-95" data-color="#f59e0b"></button>
+              <button type="button" class="color-picker-dot w-6 h-6 rounded-lg bg-[#7209b7] border-2 border-slate-900 shadow-[1px_1px_0px_#1e293b] active:scale-95" data-color="#7209b7"></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="relative flex py-1 items-center">
+          <div class="flex-grow border-t border-slate-200 dark:border-slate-700"></div>
+          <span class="flex-shrink mx-3 text-[10px] font-black text-slate-400 uppercase tracking-wider">hoặc</span>
+          <div class="flex-grow border-t border-slate-200 dark:border-slate-700"></div>
+        </div>
+
+        <button type="button" id="btn-modal-trigger-google" class="w-full py-2 px-3 rounded-xl bg-white hover:bg-slate-50 text-slate-800 font-extrabold text-xs border-2 border-slate-900 shadow-[1.5px_1.5px_0px_#1e293b] flex items-center justify-center gap-2 active:scale-95 transition-all">
+          <svg class="w-4 h-4" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+          </svg>
+          <span data-i18n="google_btn_quick">Đăng nhập nhanh với Google</span>
+        </button>
+
+        <div class="flex justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+          <button type="button" id="btn-cancel-add-account" class="px-4 py-2 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 font-bold text-xs" data-i18n="btn_cancel">Hủy</button>
+          <button type="submit" id="btn-submit-add-account" class="px-5 py-2 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-900 font-black text-xs border-2 border-slate-900 shadow-[2px_2px_0px_#1e293b] active:scale-95 transition-all flex items-center gap-1.5">
+            <i class="fa-solid fa-right-to-bracket text-xs"></i>
+            <span data-i18n="acc_btn_login_submit">Đăng Nhập Ngay</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+<!-- ================= MODAL XÁC THỰC MẬT KHẨU / MÃ PIN KHI CHUYỂN TÀI KHOẢN ================= -->
+  <div id="modal-auth-switch-account" class="hidden fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[75] flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 md:p-7 w-full max-w-sm shadow-2xl border-2 border-slate-900 animate-in font-['Nunito'] relative">
+      <div class="text-center pb-3 border-b-2 border-slate-900 dark:border-slate-700">
+        <div id="auth-switch-avatar" class="w-14 h-14 rounded-2xl mx-auto mb-2 text-white font-black text-xl flex items-center justify-center border-2 border-slate-900 shadow-[2px_2px_0px_#1e293b]">AD</div>
+        <h4 class="font-black text-slate-900 dark:text-white text-base" data-i18n="acc_sec_auth_title">Xác Thực Danh Tính Tài Khoản</h4>
+        <p class="text-xs text-slate-500 dark:text-slate-400 font-bold mt-0.5">
+          <span data-i18n="acc_sec_auth_sub">Đăng nhập vào tài khoản:</span> 
+          <span id="auth-switch-target-name" class="text-teal-600 dark:text-teal-400 font-extrabold">Anh Dũng</span>
+        </p>
+      </div>
+
+      <form id="form-auth-switch-account" class="space-y-3.5 my-4 text-xs">
+        <div>
+          <label class="block font-black text-slate-700 dark:text-slate-200 mb-1 flex items-center justify-between">
+            <span><i class="fa-solid fa-lock text-amber-500 mr-1"></i> <span data-i18n="acc_sec_auth_pwd_label">Mật khẩu hoặc mã PIN bảo vệ</span></span>
+            <span class="text-[10px] text-slate-400 font-semibold" data-i18n="acc_sec_auth_default_hint">(Thử nghiệm mặc định: 123456)</span>
+          </label>
+          <div class="relative">
+            <input type="password" id="input-auth-switch-password" required placeholder="Nhập mật khẩu / PIN..." autocomplete="current-password"
+              class="w-full bg-slate-50 dark:bg-slate-800 border-2 border-slate-900 dark:border-slate-700 rounded-xl px-3 py-2.5 pr-10 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:bg-white dark:focus:bg-slate-700 transition-all">
+            <button type="button" id="btn-toggle-switch-pwd-visibility" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-sm">
+              <i class="fa-solid fa-eye" id="icon-switch-eye"></i>
+            </button>
+          </div>
+          <p id="auth-switch-error-msg" class="hidden text-rose-500 text-[11px] font-extrabold mt-1.5 flex items-center gap-1">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <span data-i18n="acc_sec_auth_error">Mật khẩu không chính xác! Bạn không được phép truy cập tài khoản này.</span>
+          </p>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-2">
+          <button type="button" id="btn-cancel-auth-switch" class="px-4 py-2 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 font-bold text-xs" data-i18n="btn_cancel">Hủy</button>
+          <button type="submit" id="btn-submit-auth-switch" class="px-5 py-2 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-900 font-black text-xs border-2 border-slate-900 shadow-[2px_2px_0px_#1e293b] active:scale-95 transition-all flex items-center gap-1.5">
+            <i class="fa-solid fa-unlock text-xs"></i>
+            <span data-i18n="acc_sec_auth_unlock_btn">Mở Khóa &amp; Đăng Nhập</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= MODAL ĐỔI MẬT KHẨU / MÃ PIN TÀI KHOẢN HIỆN TẠI ================= -->
+  <div id="modal-change-password" class="hidden fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[75] flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 md:p-7 w-full max-w-sm shadow-2xl border-2 border-slate-900 animate-in font-['Nunito'] relative">
+      <div class="flex items-center justify-between pb-3 border-b-2 border-slate-900 dark:border-slate-700">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold text-xs border-2 border-slate-900 shadow-[1px_1px_0px_#1e293b]">
+            <i class="fa-solid fa-key"></i>
+          </div>
+          <h4 class="font-black text-slate-900 dark:text-white text-sm" data-i18n="acc_sec_change_title">Đổi Mật Khẩu / Mã PIN Bảo Mật</h4>
+        </div>
+        <button id="btn-close-change-pwd-modal" class="text-slate-400 hover:text-slate-700 dark:hover:text-white text-base"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <form id="form-change-password" class="space-y-3 my-3.5 text-xs">
+        <div>
+          <label class="block font-black text-slate-700 dark:text-slate-200 mb-1" data-i18n="acc_sec_old_pwd">Mật khẩu hiện tại</label>
+          <input type="password" id="input-old-pwd" required placeholder="Nhập mật khẩu hiện tại..." autocomplete="current-password"
+            class="w-full bg-slate-50 dark:bg-slate-800 border-2 border-slate-900 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:bg-white dark:focus:bg-slate-700 transition-all">
+        </div>
+        <div>
+          <label class="block font-black text-slate-700 dark:text-slate-200 mb-1" data-i18n="acc_sec_new_pwd">Mật khẩu mới (tối thiểu 4 ký tự)</label>
+          <input type="password" id="input-new-pwd" required minlength="4" placeholder="Nhập mật khẩu mới..." autocomplete="new-password"
+            class="w-full bg-slate-50 dark:bg-slate-800 border-2 border-slate-900 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:bg-white dark:focus:bg-slate-700 transition-all">
+        </div>
+        <div>
+          <label class="block font-black text-slate-700 dark:text-slate-200 mb-1" data-i18n="acc_sec_confirm_pwd">Xác nhận mật khẩu mới</label>
+          <input type="password" id="input-confirm-pwd" required minlength="4" placeholder="Nhập lại mật khẩu mới..." autocomplete="new-password"
+            class="w-full bg-slate-50 dark:bg-slate-800 border-2 border-slate-900 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:bg-white dark:focus:bg-slate-700 transition-all">
+        </div>
+
+        <p id="change-pwd-error-msg" class="hidden text-rose-500 text-[11px] font-extrabold mt-1 flex items-center gap-1">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          <span id="change-pwd-error-text">Lỗi</span>
+        </p>
+
+        <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+          <button type="button" id="btn-cancel-change-pwd" class="px-3.5 py-1.5 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 font-bold text-xs" data-i18n="btn_cancel">Hủy</button>
+          <button type="submit" class="px-4 py-1.5 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-900 font-black text-xs border-2 border-slate-900 shadow-[1.5px_1.5px_0px_#1e293b] active:scale-95 transition-all flex items-center gap-1">
+            <i class="fa-solid fa-check text-xs"></i>
+            <span data-i18n="acc_sec_btn_save_pwd">Lưu Mật Khẩu Mới</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= MÀN HÌNH KHÓA PHIÊN LÀM VIỆC (LOCK SCREEN OVERLAY) ================= -->
+  <div id="screen-account-locked" class="hidden fixed inset-0 bg-slate-950/85 backdrop-blur-xl z-[80] flex items-center justify-center p-4">
+    <div class="bg-[#f7f4ea] dark:bg-slate-900 rounded-3xl p-7 md:p-8 w-full max-w-sm shadow-[6px_6px_0px_#1e293b] border-2 border-slate-900 animate-in font-['Nunito'] text-center">
+      <div class="relative w-16 h-16 mx-auto mb-3">
+        <div id="lock-screen-avatar" class="w-16 h-16 rounded-2xl text-white font-black text-2xl flex items-center justify-center border-2 border-slate-900 shadow-[2px_2px_0px_#1e293b]">AD</div>
+        <span class="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-amber-400 border-2 border-slate-900 flex items-center justify-center text-[10px] text-slate-900 shadow-[1px_1px_0px_#1e293b]">
+          <i class="fa-solid fa-lock"></i>
+        </span>
+      </div>
+
+      <h3 class="font-black text-lg text-slate-900 dark:text-white" data-i18n="acc_sec_locked_title">Phiên Làm Việc Đã Bị Khóa</h3>
+      <p class="text-xs text-slate-500 dark:text-slate-400 font-bold mt-1">
+        <span id="lock-screen-user-name" class="text-teal-600 dark:text-teal-400 font-black">Anh Dũng</span>
+      </p>
+      <p class="text-[11px] text-slate-400 mt-0.5" data-i18n="acc_sec_locked_sub">Vui lòng nhập mật khẩu tài khoản để mở khóa hoặc đổi tài khoản khác.</p>
+
+      <form id="form-unlock-session" class="mt-4 space-y-3 text-xs text-left">
+        <div class="relative">
+          <input type="password" id="input-unlock-password" required placeholder="Nhập mật khẩu để mở khóa..." autocomplete="current-password"
+            class="w-full bg-white dark:bg-slate-800 border-2 border-slate-900 dark:border-slate-700 rounded-xl px-3.5 py-2.5 pr-10 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-400 transition-all">
+          <button type="button" id="btn-toggle-unlock-pwd-visibility" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-sm">
+            <i class="fa-solid fa-eye" id="icon-unlock-eye"></i>
+          </button>
+        </div>
+
+        <p id="unlock-session-error-msg" class="hidden text-rose-500 text-[11px] font-extrabold flex items-center gap-1">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          <span data-i18n="acc_sec_auth_error">Mật khẩu không chính xác! Không được phép truy cập.</span>
+        </p>
+
+        <button type="submit" class="w-full py-2.5 px-4 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-900 font-black text-xs border-2 border-slate-900 shadow-[2px_2px_0px_#1e293b] active:scale-95 transition-all flex items-center justify-center gap-1.5">
+          <i class="fa-solid fa-key text-xs"></i>
+          <span data-i18n="acc_sec_auth_unlock_btn">Mở Khóa Phiên Làm Việc</span>
+        </button>
+
+        <div class="text-center pt-2">
+          <button type="button" id="btn-lock-screen-switch-other" class="text-[11px] font-extrabold text-teal-600 dark:text-teal-400 hover:underline">
+            <i class="fa-solid fa-users mr-1"></i>
+            <span data-i18n="acc_sec_switch_other">Đăng nhập tài khoản khác</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= MÀN HÌNH ĐĂNG NHẬP GOOGLE OAUTH & BẢO MẬT (GOOGLE SIGN-IN GATEWAY) ================= -->
+  <div id="screen-google-auth" class="hidden fixed inset-0 bg-slate-950/85 backdrop-blur-xl z-[90] flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl p-7 md:p-9 w-full max-w-md shadow-2xl border-2 border-slate-900 animate-in font-['Nunito'] relative text-slate-900 dark:text-white">
+      <!-- Google Branding Header -->
+      <div class="text-center pb-4 border-b border-slate-100 dark:border-slate-800">
+        <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white dark:bg-slate-800 border-2 border-slate-900 shadow-[2px_2px_0px_#1e293b] mb-3">
+          <svg class="w-8 h-8" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+          </svg>
+        </div>
+        <h3 class="font-black text-xl text-slate-900 dark:text-white" data-i18n="google_login_title">Đăng nhập bằng Google</h3>
+        <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold mt-1" data-i18n="google_login_sub">để tiếp tục đến Hệ thống Quản lý Năng suất MYLIFE</p>
+      </div>
+
+      <!-- Form Đăng Nhập Google (2 Bước chuẩn Google Identity) -->
+      <form id="form-google-auth" class="mt-5 space-y-4 text-xs">
+        <!-- Bước 1: Nhập Email hoặc Số điện thoại -->
+        <div id="google-auth-step-email" class="space-y-3">
+          <div>
+            <label class="block font-black text-slate-700 dark:text-slate-200 mb-1.5" data-i18n="google_label_email">Email Google hoặc Tên người dùng <span class="text-rose-500">*</span></label>
+            <input type="text" id="input-google-email" placeholder="VD: yourname@gmail.com hoặc email trường học..." autocomplete="username"
+              class="w-full bg-slate-50 dark:bg-slate-800 border-2 border-slate-900 dark:border-slate-700 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:bg-white dark:focus:bg-slate-700 focus:ring-2 focus:ring-blue-400 transition-all">
+          </div>
+          <p class="text-[10px] text-slate-400 font-semibold">Hỗ trợ tài khoản @gmail.com, @st.thanglong.edu.vn hoặc Google Workspace</p>
+
+          <p id="google-email-error-msg" class="hidden text-rose-500 text-[11px] font-extrabold flex items-center gap-1">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <span id="google-email-error-text">Email không hợp lệ. Vui lòng nhập đúng định dạng email Google!</span>
+          </p>
+
+          <div class="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800">
+            <button type="button" id="btn-google-bypass" class="text-slate-500 hover:text-slate-800 dark:hover:text-white font-bold text-[11px] underline">
+              Bỏ qua &amp; Sử dụng tài khoản đã lưu
+            </button>
+            <button type="button" id="btn-google-next-step" class="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-black text-xs border-2 border-slate-900 shadow-[2px_2px_0px_#1e293b] active:scale-95 transition-all">
+              Tiếp theo <i class="fa-solid fa-arrow-right text-[10px] ml-1"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Bước 2: Nhập Mật Khẩu Tài Khoản Google (Chỉ hiện sau khi nhập email) -->
+        <div id="google-auth-step-password" class="hidden space-y-3.5">
+          <!-- Capsule thông tin email đã nhập -->
+          <div class="flex items-center justify-between px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700">
+            <div class="flex items-center gap-2 truncate">
+              <div class="w-6 h-6 rounded-full bg-blue-600 text-white font-bold text-[10px] flex items-center justify-center shrink-0">G</div>
+              <span id="google-display-chosen-email" class="font-extrabold text-xs truncate">user@gmail.com</span>
+            </div>
+            <button type="button" id="btn-google-change-email" class="text-[10px] text-blue-600 dark:text-blue-400 font-extrabold hover:underline shrink-0">Đổi</button>
+          </div>
+
+          <div>
+            <label class="block font-black text-slate-700 dark:text-slate-200 mb-1.5" data-i18n="google_label_password">Nhập mật khẩu tài khoản Google <span class="text-rose-500">*</span></label>
+            <div class="relative">
+              <input type="password" id="input-google-password" placeholder="Nhập mật khẩu tài khoản Google..." autocomplete="current-password"
+                class="w-full bg-slate-50 dark:bg-slate-800 border-2 border-slate-900 dark:border-slate-700 rounded-xl px-3.5 py-2.5 pr-10 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:bg-white dark:focus:bg-slate-700 focus:ring-2 focus:ring-blue-400 transition-all">
+              <button type="button" id="btn-toggle-google-pwd-visibility" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-sm">
+                <i class="fa-solid fa-eye" id="icon-google-pwd-eye"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 text-[11px] text-emerald-800 dark:text-emerald-300 font-bold flex items-center gap-2">
+            <i class="fa-solid fa-shield-halved text-emerald-600 text-sm shrink-0"></i>
+            <span>Bảo mật 256-bit mã hóa Google Identity Services</span>
+          </div>
+
+          <p id="google-auth-error-msg" class="hidden text-rose-500 text-[11px] font-extrabold flex items-center gap-1">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <span id="google-auth-error-text">Mật khẩu không chính xác! Vui lòng kiểm tra lại.</span>
+          </p>
+
+          <div class="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
+            <button type="button" id="btn-google-back-email" class="text-slate-500 hover:text-slate-800 dark:hover:text-white font-bold text-[11px]">
+              <i class="fa-solid fa-arrow-left text-[10px] mr-1"></i> Quay lại
+            </button>
+            <button type="submit" id="btn-submit-google-auth" class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-black text-xs border-2 border-slate-900 shadow-[2px_2px_0px_#1e293b] active:scale-95 transition-all flex items-center gap-1.5">
+              <i class="fa-solid fa-lock text-xs"></i>
+              <span data-i18n="google_btn_login">Xác Thực &amp; Đăng Nhập</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Trạng thái Đang Xác Thực (Loading Handshake) -->
+        <div id="google-auth-verifying" class="hidden py-6 text-center space-y-3">
+          <div class="w-10 h-10 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto"></div>
+          <p class="font-extrabold text-xs text-slate-700 dark:text-slate-300">Đang xác thực bảo mật tài khoản Google của bạn...</p>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= FLOATING AI COPILOT CHATBOT ================= -->
+  <!-- Draggable Minimized Floating Icon (Mặc định ẩn, chỉ hiện khi người dùng bấm 'Thu nhỏ' từ khung chat, có thể kéo thả di chuyển khắp màn hình) -->
+  <div id="ai-copilot-minimized-bubble" class="hidden fixed z-50 cursor-grab active:cursor-grabbing select-none group touch-none transition-transform"
+       style="bottom: 84px; right: 24px;"
+       title="Kéo thả để di chuyển khắp màn hình | Bấm để mở lại Trợ lý Gemini AI">
+    <div class="relative flex items-center justify-center w-12 h-12 rounded-2xl bg-[#226f54] text-white border-2 border-slate-900 shadow-[3px_3px_0px_#1e293b] hover:scale-110 active:scale-95 transition-all">
+      <span class="absolute -top-1 -right-1 flex h-3 w-3">
+        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-300 opacity-75"></span>
+        <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-400 border border-slate-900"></span>
+      </span>
+      <i class="fa-solid fa-wand-magic-sparkles text-amber-300 text-lg group-hover:rotate-12 transition-transform"></i>
+    </div>
+  </div>
+
+  <!-- Chat Drawer / Window (Thiết kế Paper Retro Chuẩn Mẫu) -->
+  <div id="ai-copilot-drawer" class="hidden fixed bottom-20 right-6 z-50 w-[380px] sm:w-[420px] max-w-[calc(100vw-2rem)] h-[580px] max-h-[calc(100vh-6.5rem)] bg-[#f7f4ea] rounded-[22px] shadow-[4px_4px_0px_#1e293b] border-2 border-slate-900 flex flex-col overflow-hidden animate-in font-['Nunito']">
+    <!-- Header: Deep Teal #226f54 -->
+    <div class="px-4 py-3 bg-[#226f54] text-white flex items-center justify-between shrink-0 border-b-2 border-slate-900">
+      <div class="flex items-center gap-3">
+        <!-- Amber Badge with sparkles -->
+        <div class="w-9 h-9 rounded-xl bg-[#fbbf24] border-2 border-slate-900 flex items-center justify-center text-slate-900 font-bold text-sm shadow-[1.5px_1.5px_0px_#1e293b] shrink-0">
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
+        </div>
+        <div>
+          <h4 class="font-extrabold text-[15px] leading-tight text-white flex items-center gap-1.5">
+            <span data-i18n="ai_drawer_title">Trợ Lý Gemini AI</span>
+            <span id="ai-provider-badge" class="text-[9px] bg-emerald-950/40 text-emerald-200 font-bold px-1.5 py-0.5 rounded-full border border-emerald-400/40">Gemini 1.5</span>
+          </h4>
+          <p class="text-[11.5px] text-emerald-100 font-semibold leading-none mt-0.5" id="ai-status-indicator" data-i18n="ai_drawer_sub">Tối ưu thời gian &amp; năng suất</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-1">
+        <button id="btn-ai-clear-chat" class="w-7 h-7 rounded-lg hover:bg-white/20 text-white/90 hover:text-white flex items-center justify-center transition-colors" title="Làm mới hội thoại">
+          <i class="fa-solid fa-rotate-right text-xs"></i>
+        </button>
+        <button id="btn-ai-open-settings" class="w-7 h-7 rounded-lg hover:bg-white/20 text-white/90 hover:text-white flex items-center justify-center transition-colors" title="Cài đặt API Key">
+          <i class="fa-solid fa-gear text-xs"></i>
+        </button>
+        <!-- Nút Thu Nhỏ thành icon kéo thả -->
+        <button id="btn-ai-minimize-drawer" class="w-7 h-7 rounded-lg hover:bg-white/20 text-white/90 hover:text-white flex items-center justify-center transition-colors" title="Thu nhỏ thành icon kéo thả">
+          <i class="fa-solid fa-minus text-xs font-bold"></i>
+        </button>
+        <!-- Nút Đóng hoàn toàn -->
+        <button id="btn-ai-close-drawer" class="w-7 h-7 rounded-lg hover:bg-white/20 text-white flex items-center justify-center transition-colors" title="Đóng hoàn toàn">
+          <i class="fa-solid fa-xmark text-base font-bold"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Messages Container -->
+    <div id="ai-chat-messages" class="flex-1 p-4 overflow-y-auto space-y-3.5 text-xs bg-[#f7f4ea]">
+      <!-- Welcome message rendered by JS -->
+    </div>
+
+    <!-- Quick Suggestion Chips Bar -->
+    <div id="ai-suggestion-chips-bar" class="px-3.5 py-2.5 bg-[#f7f4ea] border-t-2 border-slate-900 flex items-center gap-2 overflow-x-auto shrink-0">
+      <button type="button" class="ai-sample-chip px-3 py-1.5 bg-white border-2 border-slate-900 rounded-xl text-xs font-extrabold text-slate-900 shadow-[1.5px_1.5px_0px_#1e293b] hover:bg-amber-100 active:scale-95 transition-all flex items-center gap-1.5 shrink-0" data-prompt="💡 Tối ưu lịch làm việc">
+        <span>💡</span>
+        <span data-i18n="ai_chip_schedule">Tối ưu lịch làm việc</span>
+      </button>
+      <button type="button" class="ai-sample-chip px-3 py-1.5 bg-white border-2 border-slate-900 rounded-xl text-xs font-extrabold text-slate-900 shadow-[1.5px_1.5px_0px_#1e293b] hover:bg-rose-100 active:scale-95 transition-all flex items-center gap-1.5 shrink-0" data-prompt="❤️ Phân tích sức khỏe">
+        <span>❤️</span>
+        <span data-i18n="ai_chip_health">Phân tích sức khỏe</span>
+      </button>
+    </div>
+
+    <!-- Input Bar -->
+    <form id="ai-chat-form" class="p-3 bg-white border-t-2 border-slate-900 flex items-center gap-2.5 shrink-0">
+      <input type="text" id="ai-chat-input" placeholder="Hỏi Gemini AI..." data-i18n-placeholder="ai_placeholder" autocomplete="off"
+        class="flex-1 bg-[#f3efe6] border-2 border-slate-900 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none transition-all">
+      <button type="submit" id="btn-ai-send" class="w-10 h-10 rounded-xl bg-[#f25c54] hover:bg-[#e76f51] border-2 border-slate-900 text-white flex items-center justify-center shadow-[2px_2px_0px_#1e293b] active:scale-95 active:shadow-none shrink-0 transition-all">
+        <i class="fa-solid fa-paper-plane text-xs"></i>
+      </button>
+    </form>
+  </div>
+
+</body>
+</html>
