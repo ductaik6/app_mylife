@@ -1786,7 +1786,6 @@ document.addEventListener('DOMContentLoaded', () => {
     localStorage.setItem('mylife_google_auth_done', 'true');
     renderAccountUI();
     updateClock();
-    loadAccountData(activeAccountId);
     closeGoogleAuthScreen();
 
     const successMsg = isEn
@@ -1794,7 +1793,7 @@ document.addEventListener('DOMContentLoaded', () => {
       : `Chào mừng ${displayName}! Đã xác thực tài khoản Google thành công.`;
     if (typeof showHint === 'function') showHint(successMsg);
 
-    // Chỉ đồng bộ sau khi đã tải cloud thành công hoặc xác nhận tài khoản mới.
+    // Bắt đầu đồng bộ bộ dữ liệu mới của UID sau khi khởi tạo thành công.
     const syncOk = await triggerFullCloudSync(false);
     if (!syncOk) {
       console.warn('[MyLife] Đăng nhập thành công nhưng chưa đồng bộ được dữ liệu.');
