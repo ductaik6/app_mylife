@@ -115,18 +115,8 @@ window.MyLifeFirebase = {
     const doc = await fbDb.collection('mylife_accounts').doc(uid).get();
     if (doc.exists) return doc.data();
 
-    // Migration bridge: đọc document cũ theo ID nội bộ trước khi chuyển sang UID.
-    // Chỉ dùng trong giai đoạn chuyển đổi; xóa fallback sau khi đã xác minh dữ liệu.
-    if (account.id && account.id !== uid) {
-      const legacyDoc = await fbDb
-        .collection('mylife_accounts')
-        .doc(account.id)
-        .get();
-      if (legacyDoc.exists) {
-        console.warn('[Firebase] Đã đọc document legacy:', account.id);
-        return legacyDoc.data();
-      }
-    }
+    // Pilot bắt đầu với dữ liệu mới: tuyệt đối không đọc document legacy.
+    // Tài khoản UID chưa có document sẽ được khởi tạo từ dữ liệu mới ở client.
     return null;
   },
 
