@@ -39,7 +39,8 @@ Finance PIN remains a browser-side UI lock, not server-side protection. AI chat 
 7. Only then invite the remaining users.
 
 ## Validation and limitations
-- JavaScript syntax compilation passed for `app.js` and `firebase-config.js`.
+- GitHub Actions workflow `.github/workflows/validate.yml` checks JavaScript syntax on pull requests and pushes to the pilot branch.
+- JavaScript syntax compilation passed locally for `app.js` and `firebase-config.js`.
 - No real browser login, Firebase Rules Playground, or 20-user concurrent load test has been run yet.
 - The current full-document sync may overwrite a user's own newer edits if the same user edits from multiple devices simultaneously. Conflict/version handling is a separate required improvement for multi-device usage.
 - The 20-account count in the browser is a convenience limit, not a security boundary. UID-based Firestore rules provide data isolation.
