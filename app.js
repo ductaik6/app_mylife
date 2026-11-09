@@ -1750,6 +1750,9 @@ document.addEventListener('DOMContentLoaded', () => {
       savedAccounts.push(existingAcc);
     }
 
+    // Chỉ giữ hồ sơ Firebase của người đang đăng nhập trên trình duyệt này.
+    // Tài khoản demo/legacy không còn xuất hiện trong bộ chọn tài khoản thử nghiệm.
+    savedAccounts = [existingAcc];
     activeAccountId = targetAccId;
     saveAccountsData();
 
