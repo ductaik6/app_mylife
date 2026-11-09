@@ -1808,7 +1808,8 @@ document.addEventListener('DOMContentLoaded', () => {
         tasks: cloudData.tasks,
         projects: cloudData.projects,
         transactions: cloudData.transactions,
-        health_data: cloudData.health
+        health_data: cloudData.health,
+        task_settings: cloudData.taskSettings
       };
 
       Object.entries(cloudToLocal).forEach(([key, value]) => {
@@ -1859,7 +1860,8 @@ document.addEventListener('DOMContentLoaded', () => {
       tasks: tasks || [],
       health: healthData || {},
       transactions: transactions || [],
-      projects: projects || []
+      projects: projects || [],
+      taskSettings: taskSettings || {}
     };
 
     let ok = false;
@@ -3316,6 +3318,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     populateProjectDropdowns();
     renderDeepTasksView();
+    const curAcc = savedAccounts.find(a => a.id === activeAccountId);
+    const targetId = curAcc?.uid;
+    if (window.MyLifeFirebase?.isAvailable() && targetId &&
+        window.MyLifeFirebase.auth?.currentUser?.uid === targetId) {
+      window.MyLifeFirebase.syncModuleToCloud(targetId, 'projects', projects)
+        .catch(err => console.error('[MyLife] Lỗi đồng bộ dự án:', err));
+    }
   }
 
   function saveTaskSettings() {
@@ -3327,6 +3336,13 @@ document.addEventListener('DOMContentLoaded', () => {
     renderTasks();
     renderDeepTasksView();
     if (typeof renderSmartNotifications === 'function') renderSmartNotifications();
+    const curAcc = savedAccounts.find(a => a.id === activeAccountId);
+    const targetId = curAcc?.uid;
+    if (window.MyLifeFirebase?.isAvailable() && targetId &&
+        window.MyLifeFirebase.auth?.currentUser?.uid === targetId) {
+      window.MyLifeFirebase.syncModuleToCloud(targetId, 'taskSettings', taskSettings)
+        .catch(err => console.error('[MyLife] Lỗi đồng bộ cài đặt công việc:', err));
+    }
   }
 
   function getAccentBarClass(colorName) {
