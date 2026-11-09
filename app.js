@@ -1778,37 +1778,10 @@ document.addEventListener('DOMContentLoaded', () => {
     activeAccountId = targetAccId;
     saveAccountsData();
 
-    // Tài khoản mới sẽ bắt đầu bằng dữ liệu mặc định riêng theo UID.
-    // Không đọc/nhập các document acc-gg-* cũ.
-    let cloudData = null;
-    try {
-      cloudData = await window.MyLifeFirebase.fetchAccountDataFromCloud(existingAcc);
-    } catch (err) {
-      console.error('[MyLife] Không tải được dữ liệu cloud:', err);
-      alert(isEn
-        ? 'Could not load your cloud data. No cloud overwrite was performed.'
-        : 'Không tải được dữ liệu đám mây. MyLife chưa tự động ghi đè dữ liệu lên cloud.');
-      return false;
-    }
-
-    if (cloudData) {
-      const cloudToLocal = {
-        tasks: cloudData.tasks,
-        projects: cloudData.projects,
-        transactions: cloudData.transactions,
-        health_data: cloudData.health,
-        task_settings: cloudData.taskSettings
-      };
-
-      Object.entries(cloudToLocal).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          localStorage.setItem(
-            getAccountDataKey(key, targetAccId),
-            JSON.stringify(value)
-          );
-        }
-      });
-    }
+    // Giai đoạn thử nghiệm mới: không nhập dữ liệu từ các document cũ.
+    // Mỗi Firebase UID khởi tạo dữ liệu riêng trên trình duyệt của người đó.
+    // Dữ liệu mới sẽ được tải lên Firestore sau khi khởi tạo xong.
+    loadAccountData(targetAccId);
 
     localStorage.setItem('mylife_google_auth_done', 'true');
     renderAccountUI();
