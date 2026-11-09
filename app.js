@@ -1180,6 +1180,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const targetAcc = savedAccounts.find(a => a.id === pendingSwitchAccountId);
     if (!targetAcc) return;
 
+    const authenticatedUser = window.MyLifeFirebase?.auth?.currentUser;
+    if (!authenticatedUser || !targetAcc.uid ||
+        authenticatedUser.uid !== targetAcc.uid) {
+      alert('Bản thử nghiệm nhiều người dùng chỉ cho phép sử dụng tài khoản Google đang xác thực. Hãy đăng nhập bằng Google để chuyển tài khoản.');
+      closeAuthSwitchModal();
+      return false;
+    }
+
     const expectedPwd = String(targetAcc.password || '123456').trim();
     if (String(enteredPassword).trim() !== expectedPwd) {
       const errEl = document.getElementById('auth-switch-error-msg');
@@ -1665,10 +1673,12 @@ document.addEventListener('DOMContentLoaded', () => {
     inputGoogleEmail?.focus();
   });
 
-  btnGoogleBypass?.addEventListener('click', () => {
-    closeGoogleAuthScreen();
-    localStorage.setItem('mylife_google_auth_done', 'true');
-  });
+  btnGoogleBypass?.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    alert('Vui lòng đăng nhập bằng Google để sử dụng MyLife trong chế độ thử nghiệm nhiều người dùng.');
+    openGoogleAuthScreen();
+  }, true);
 
   btnOpenGoogleLogin?.addEventListener('click', () => {
     openGoogleAuthScreen();
@@ -1691,10 +1701,8 @@ document.addEventListener('DOMContentLoaded', () => {
       btnFbGooglePopup.disabled = true;
       btnFbGooglePopup.classList.add('opacity-70', 'pointer-events-none');
       
-      const user = await window.MyLifeFirebase.signInWithGooglePopup();
-      if (user) {
-        await handleFirebaseUserLoginSuccess(user);
-      }
+      await window.MyLifeFirebase.signInWithGooglePopup();
+      // onAuthStateChanged xử lý đăng nhập và tải dữ liệu đúng một luồng.
     } catch (err) {
       console.error('Firebase Google Login Error:', err);
       if (err.code !== 'auth/popup-closed-by-user' && err.code !== 'auth/cancelled-popup-request') {
@@ -1960,6 +1968,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 600);
   });
 
+
+  // Chặn cổng email/mật khẩu giả lập: mật khẩu nhập ở đây không xác thực với Google.
+  formGoogleAuth?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    alert('Đăng nhập bằng email/mật khẩu giả lập đã được tắt. Hãy sử dụng nút Đăng nhập Google.');
+    openGoogleAuthScreen();
+  }, true);
 
   /* ============================================================
    * HELPER: Format / parse VND numbers with dot separators
@@ -9483,12 +9499,31 @@ Quy tắc: Khi người dùng yêu cầu tác vụ, BẮT BUỘC PHẢI GỌI FU
   const initialView = localStorage.getItem('mylife_active_view') || 'overview';
   switchMainView(initialView);
 
-  // Hiển thị cổng xác thực đăng nhập Google khi mở ứng dụng (nếu chưa xác thực)
-  if (localStorage.getItem('mylife_google_auth_done') !== 'true') {
+  // Firebase Authentication là nguồn xác thực duy nhất; không tin cờ LocalStorage.
+  const firebaseAuth = window.MyLifeFirebase?.auth;
+  if (firebaseAuth) {
+    firebaseAuth.onAuthStateChanged(async (user) => {
+      if (!user) {
+        localStorage.removeItem('mylife_google_auth_done');
+        openGoogleAuthScreen();
+        return;
+      }
+
+      try {
+        await handleFirebaseUserLoginSuccess(user);
+      } catch (err) {
+        console.error('[MyLife] Không thể khôi phục phiên Firebase:', err);
+        localStorage.removeItem('mylife_google_auth_done');
+        openGoogleAuthScreen();
+        alert('Không thể tải phiên làm việc. Vui lòng thử đăng nhập lại. ' + (err.message || ''));
+      }
+    });
+  } else {
+    localStorage.removeItem('mylife_google_auth_done');
     openGoogleAuthScreen();
   }
 
   // Không tự đồng bộ khi chưa xác thực Firebase.
-  // Cloud sync chỉ được kích hoạt sau khi Google Login hoàn tất.
+  // Chỉ onAuthStateChanged mới cho phép khôi phục phiên và tải dữ liệu.
 
 });
