@@ -11,7 +11,8 @@ Run a fresh-data pilot with up to 20 distinct Google/Firebase Authentication use
 - The old local demo/password account flow and Google bypass are blocked for this pilot.
 
 ## Fresh-data behavior
-- Login does not read legacy `acc-gg-*` documents.
+- Login does not read legacy `acc-gg-*` documents or any existing account cloud payload.
+- After sign-in, the browser's account picker retains only the currently authenticated Firebase profile; legacy demo profiles are not offered.
 - The app initializes the signed-in UID's local data space and uploads the new test data.
 - Existing legacy documents are left untouched in Firestore.
 - Do not manually delete old documents; they are simply not used by this test branch.
