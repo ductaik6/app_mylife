@@ -1000,33 +1000,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof renderInitialWelcomeMessage === 'function') renderInitialWelcomeMessage();
     if (typeof renderSmartNotifications === 'function') renderSmartNotifications();
 
-    // 8. Tự động kiểm tra và tải cập nhật mới nhất từ Firebase Cloud nếu tài khoản có UID
-    const curAcc = savedAccounts.find(a => a.id === accId);
-    if (window.MyLifeFirebase?.isAvailable() && curAcc?.uid) {
-      window.MyLifeFirebase.fetchModuleFromCloud(curAcc.uid, 'tasks').then(cloudTasks => {
-        if (Array.isArray(cloudTasks) && cloudTasks.length > 0) {
-          tasks = cloudTasks;
-          localStorage.setItem(tasksKey, JSON.stringify(tasks));
-          if (typeof renderTasks === 'function') renderTasks();
-          if (typeof renderWeeklySchedule === 'function') renderWeeklySchedule();
-        }
-      });
-      window.MyLifeFirebase.fetchModuleFromCloud(curAcc.uid, 'health_data').then(cloudHealth => {
-        if (cloudHealth && typeof cloudHealth === 'object' && cloudHealth.lastActiveDate) {
-          healthData = cloudHealth;
-          localStorage.setItem(healthKey, JSON.stringify(healthData));
-          if (typeof updateHealth === 'function') updateHealth();
-        }
-      });
-      window.MyLifeFirebase.fetchModuleFromCloud(curAcc.uid, 'transactions').then(cloudTrans => {
-        if (Array.isArray(cloudTrans) && cloudTrans.length > 0) {
-          transactions = cloudTrans;
-          localStorage.setItem(transKey, JSON.stringify(transactions));
-          if (typeof renderFinanceOverviewCard === 'function') renderFinanceOverviewCard();
-          if (typeof renderAllFinanceViews === 'function' && financeUnlocked) renderAllFinanceViews();
-        }
-      });
-    }
+    // Pilot dữ liệu mới: không đọc bất kỳ dữ liệu cloud cũ nào khi đăng nhập.
+    // Dữ liệu cục bộ vừa khởi tạo sẽ được đồng bộ lên document UID sau khi xác thực.
   }
 
   function renderAccountUI() {
@@ -1179,6 +1154,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!pendingSwitchAccountId) return;
     const targetAcc = savedAccounts.find(a => a.id === pendingSwitchAccountId);
     if (!targetAcc) return;
+
+    const authenticatedUser = window.MyLifeFirebase?.auth?.currentUser;
+    if (!authenticatedUser || !targetAcc.uid ||
+        authenticatedUser.uid !== targetAcc.uid) {
+      alert('Bản thử nghiệm nhiều người dùng chỉ cho phép sử dụng tài khoản Google đang xác thực. Hãy đăng nhập bằng Google để chuyển tài khoản.');
+      closeAuthSwitchModal();
+      return false;
+    }
 
     const expectedPwd = String(targetAcc.password || '123456').trim();
     if (String(enteredPassword).trim() !== expectedPwd) {
@@ -1431,7 +1414,21 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof showHint === 'function') showHint(msg);
   }
 
-  btnLockSession?.addEventListener('click', lockSession);
+  btnLockSession?.addEventListener('click', async () => {
+    const auth = window.MyLifeFirebase?.auth;
+    if (auth?.currentUser) {
+      try {
+        sessionStorage.removeItem('mylife_session_locked');
+        await auth.signOut();
+        // onAuthStateChanged sẽ đưa người dùng về màn hình đăng nhập.
+      } catch (err) {
+        console.error('[MyLife] Lỗi đăng xuất Firebase:', err);
+        alert('Không thể đăng xuất lúc này. Vui lòng thử lại.');
+      }
+      return;
+    }
+    lockSession();
+  });
 
   formUnlockSession?.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -1480,15 +1477,8 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   function openAddAccountModal() {
-    if (savedAccounts.length >= 20) {
-      const isEn = (typeof currentLang !== 'undefined' && currentLang === 'en');
-      alert(isEn ? 'Maximum limit of 20 accounts reached!' : 'Đã đạt giới hạn tối đa 20 tài khoản!');
-      return;
-    }
-    if (modalAddAccount) {
-      modalAddAccount.classList.remove('hidden');
-      document.getElementById('input-acc-name')?.focus();
-    }
+    alert('Trong bản thử nghiệm nhiều người dùng, hãy đăng nhập bằng Google. Mỗi tài khoản Google tương ứng với một người dùng riêng.');
+    openGoogleAuthScreen();
     toggleAccountDropdown(false);
   }
 
@@ -1506,48 +1496,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   formAddAccount?.addEventListener('submit', (e) => {
     e.preventDefault();
-    if (savedAccounts.length >= 20) {
-      const isEn = (typeof currentLang !== 'undefined' && currentLang === 'en');
-      alert(isEn ? 'Maximum limit of 20 accounts reached!' : 'Đã đạt giới hạn tối đa 20 tài khoản!');
-      return;
-    }
-
-    const nameInput = document.getElementById('input-acc-name');
-    const emailInput = document.getElementById('input-acc-email');
-    const pwdInput = document.getElementById('input-acc-password');
-    const roleSelect = document.getElementById('select-acc-role');
-
-    const name = nameInput ? nameInput.value.trim() : '';
-    const email = emailInput ? emailInput.value.trim() : '';
-    const password = pwdInput ? pwdInput.value.trim() : '';
-    const role = roleSelect ? roleSelect.value : 'Thành viên';
-
-    if (!name || !email || !password) return;
-
-    const newAcc = {
-      id: 'acc-' + Date.now(),
-      name: name,
-      email: email,
-      password: password,
-      role: role,
-      color: selectedAvatarColor || '#4361ee',
-      initials: computeInitials(name),
-      createdAt: new Date().toISOString()
-    };
-
-    savedAccounts.push(newAcc);
-    activeAccountId = newAcc.id;
-    saveAccountsData();
-    renderAccountUI();
-    updateClock();
-    loadAccountData(activeAccountId);
+    alert('Trong bản thử nghiệm, mỗi người dùng đăng nhập bằng tài khoản Google riêng. Không tạo tài khoản nội bộ bằng email/mật khẩu.');
     closeAddAccountModal();
-
-    const isEn = (typeof currentLang !== 'undefined' && currentLang === 'en');
-    const successMsg = isEn 
-      ? `Successfully logged into new account: ${newAcc.name}!` 
-      : `Đăng nhập thành công tài khoản mới: ${newAcc.name}!`;
-    if (typeof showHint === 'function') showHint(successMsg);
+    openGoogleAuthScreen();
   });
 
   // Khôi phục trạng thái khóa phiên nếu trước đó đã khóa
@@ -1665,10 +1616,12 @@ document.addEventListener('DOMContentLoaded', () => {
     inputGoogleEmail?.focus();
   });
 
-  btnGoogleBypass?.addEventListener('click', () => {
-    closeGoogleAuthScreen();
-    localStorage.setItem('mylife_google_auth_done', 'true');
-  });
+  btnGoogleBypass?.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    alert('Vui lòng đăng nhập bằng Google để sử dụng MyLife trong chế độ thử nghiệm nhiều người dùng.');
+    openGoogleAuthScreen();
+  }, true);
 
   btnOpenGoogleLogin?.addEventListener('click', () => {
     openGoogleAuthScreen();
@@ -1691,10 +1644,8 @@ document.addEventListener('DOMContentLoaded', () => {
       btnFbGooglePopup.disabled = true;
       btnFbGooglePopup.classList.add('opacity-70', 'pointer-events-none');
       
-      const user = await window.MyLifeFirebase.signInWithGooglePopup();
-      if (user) {
-        handleFirebaseUserLoginSuccess(user);
-      }
+      await window.MyLifeFirebase.signInWithGooglePopup();
+      // onAuthStateChanged xử lý đăng nhập và tải dữ liệu đúng một luồng.
     } catch (err) {
       console.error('Firebase Google Login Error:', err);
       if (err.code !== 'auth/popup-closed-by-user' && err.code !== 'auth/cancelled-popup-request') {
@@ -1711,75 +1662,75 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  function handleFirebaseUserLoginSuccess(user) {
+  async function handleFirebaseUserLoginSuccess(user) {
     const isEn = (typeof currentLang !== 'undefined' && currentLang === 'en');
+    if (!user?.uid) throw new Error('Firebase không trả về UID hợp lệ.');
+
+    const uid = user.uid;
     const email = user.email || '';
-    const displayName = user.displayName || (email.split('@')[0] || 'User').toUpperCase();
+    const displayName = user.displayName ||
+      (email.split('@')[0] || 'User').toUpperCase();
     const photoURL = user.photoURL || '';
 
-    // Kiểm tra xem tài khoản đã từng đăng nhập chưa
-    let existingAcc = savedAccounts.find(a => (a.email || '').toLowerCase() === email.toLowerCase());
-    let targetAccId = '';
+    // Chỉ ghép tài khoản theo Firebase UID. Không nhập dữ liệu từ tài khoản
+    // cũ chỉ vì trùng email: email không phải khóa sở hữu dữ liệu.
+    let existingAcc = savedAccounts.find(a => a.uid === uid || a.id === uid);
 
+    // Tài khoản mới luôn có ID nội bộ bằng UID đầy đủ.
+    // Các document acc-gg-* cũ được bỏ qua theo yêu cầu, không tự di chuyển.
+    const targetAccId = uid;
     if (existingAcc) {
-      existingAcc.name = displayName || existingAcc.name;
+      existingAcc.id = uid;
+      existingAcc.uid = uid;
+      existingAcc.name = displayName;
+      existingAcc.email = email;
       existingAcc.photoURL = photoURL;
       existingAcc.isGoogle = true;
-      existingAcc.uid = user.uid;
-      targetAccId = existingAcc.id;
+      existingAcc.password = '';
     } else {
-      if (savedAccounts.length >= 20) {
-        alert(isEn ? 'Maximum limit of 20 accounts reached!' : 'Đã đạt giới hạn tối đa 20 tài khoản!');
-        return;
-      }
-
-      const newAcc = {
-        id: 'acc-gg-' + (user.uid ? user.uid.substring(0, 10) : Date.now()),
-        uid: user.uid,
+      existingAcc = {
+        id: uid,
+        uid,
         name: displayName,
-        email: email,
+        email,
         password: '',
         role: email.includes('.edu.vn') ? 'Cá nhân' : 'Thành viên',
         color: '#4285F4',
         initials: computeInitials(displayName),
         isGoogle: true,
-        photoURL: photoURL,
+        photoURL,
         createdAt: new Date().toISOString()
       };
-
-      savedAccounts.push(newAcc);
-      targetAccId = newAcc.id;
+      savedAccounts.push(existingAcc);
     }
 
+    // Chỉ giữ hồ sơ Firebase của người đang đăng nhập trên trình duyệt này.
+    // Tài khoản demo/legacy không còn xuất hiện trong bộ chọn tài khoản thử nghiệm.
+    savedAccounts = [existingAcc];
     activeAccountId = targetAccId;
-    localStorage.setItem('mylife_google_auth_done', 'true');
     saveAccountsData();
+
+    // Giai đoạn thử nghiệm mới: không nhập dữ liệu từ các document cũ.
+    // Mỗi Firebase UID khởi tạo dữ liệu riêng trên trình duyệt của người đó.
+    // Dữ liệu mới sẽ được tải lên Firestore sau khi khởi tạo xong.
+    loadAccountData(targetAccId);
+
+    localStorage.setItem('mylife_google_auth_done', 'true');
     renderAccountUI();
     updateClock();
-    loadAccountData(activeAccountId);
     closeGoogleAuthScreen();
 
-    // Đồng bộ tức thời dữ liệu đám mây Firebase nếu có
-    if (window.MyLifeFirebase && user.uid) {
-      window.MyLifeFirebase.fetchModuleFromCloud(user.uid, 'tasks').then(cloudTasks => {
-        if (Array.isArray(cloudTasks) && cloudTasks.length > 0) {
-          tasks = cloudTasks;
-          localStorage.setItem(getAccountDataKey('tasks', activeAccountId), JSON.stringify(tasks));
-          if (typeof renderTasks === 'function') renderTasks();
-          if (typeof renderWeeklySchedule === 'function') renderWeeklySchedule();
-        }
-      });
-    }
-
-    const successMsg = isEn 
-      ? `Welcome ${displayName}! Google authentication successful.` 
+    const successMsg = isEn
+      ? `Welcome ${displayName}! Google authentication successful.`
       : `Chào mừng ${displayName}! Đã xác thực tài khoản Google thành công.`;
     if (typeof showHint === 'function') showHint(successMsg);
 
-    // Đồng bộ toàn bộ dữ liệu mới lên Firestore
-    setTimeout(() => {
-      triggerFullCloudSync(false);
-    }, 500);
+    // Bắt đầu đồng bộ bộ dữ liệu mới của UID sau khi khởi tạo thành công.
+    const syncOk = await triggerFullCloudSync(false);
+    if (!syncOk) {
+      console.warn('[MyLife] Đăng nhập thành công nhưng chưa đồng bộ được dữ liệu.');
+    }
+    return true;
   }
 
   // Đồng bộ toàn bộ dữ liệu hiện tại lên Firebase Firestore
@@ -1789,17 +1740,32 @@ document.addEventListener('DOMContentLoaded', () => {
       return false;
     }
 
+    const authUser = window.MyLifeFirebase.auth?.currentUser;
     const curAcc = getActiveAccount();
-    if (!curAcc) return false;
+    if (!authUser || !curAcc || !curAcc.uid ||
+        authUser.uid !== curAcc.uid) {
+      if (showFeedback) alert('Phiên đăng nhập không hợp lệ. Vui lòng đăng nhập Google lại.');
+      return false;
+    }
 
     const payload = {
       tasks: tasks || [],
       health: healthData || {},
       transactions: transactions || [],
-      projects: projects || []
+      projects: projects || [],
+      taskSettings: taskSettings || {}
     };
 
-    const ok = await window.MyLifeFirebase.syncAccountDataToCloud(curAcc, payload);
+    let ok = false;
+    try {
+      ok = await window.MyLifeFirebase.syncAccountDataToCloud(curAcc, payload);
+    } catch (err) {
+      console.error('[MyLife] Đồng bộ thất bại:', err);
+      if (showFeedback) {
+        alert('Đồng bộ thất bại: ' + (err.message || 'Lỗi không xác định'));
+      }
+      return false;
+    }
     if (ok && showFeedback) {
       const isEn = (typeof currentLang !== 'undefined' && currentLang === 'en');
       const msg = isEn 
@@ -1836,95 +1802,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // Không xác thực Google bằng email/mật khẩu nhập trong giao diện.
+  // Firebase Google Popup/Redirect là phương thức xác thực duy nhất.
+
+  // Chặn cổng email/mật khẩu giả lập: mật khẩu nhập ở đây không xác thực với Google.
   formGoogleAuth?.addEventListener('submit', (e) => {
     e.preventDefault();
-    const email = currentGoogleEmailCandidate || inputGoogleEmail?.value?.trim() || '';
-    const pwd = inputGooglePwd?.value || '';
-    const isEn = (typeof currentLang !== 'undefined' && currentLang === 'en');
-
-    if (!email || !pwd) return;
-
-    if (pwd.length < 4) {
-      if (googleAuthError && googleAuthErrorText) {
-        googleAuthErrorText.textContent = isEn 
-          ? 'Password must be at least 4 characters!' 
-          : 'Mật khẩu Google phải có tối thiểu 4 ký tự!';
-        googleAuthError.classList.remove('hidden');
-      }
-      return;
-    }
-
-    // Check if account already exists in savedAccounts
-    const existingAcc = savedAccounts.find(a => (a.email || '').toLowerCase() === email.toLowerCase());
-
-    if (existingAcc) {
-      // Validate password with registered account
-      const expected = String(existingAcc.password || '123456');
-      if (pwd !== expected) {
-        if (googleAuthError && googleAuthErrorText) {
-          googleAuthErrorText.textContent = isEn 
-            ? 'Incorrect Google account password! Verification failed.' 
-            : 'Mật khẩu tài khoản Google không chính xác! Xác thực thất bại.';
-          googleAuthError.classList.remove('hidden');
-          inputGooglePwd?.classList.add('ring-2', 'ring-rose-500');
-          setTimeout(() => inputGooglePwd?.classList.remove('ring-2', 'ring-rose-500'), 1500);
-        }
-        return;
-      }
-    }
-
-    // Handshake animation for authentic Google Identity feel
-    googleStepPwd?.classList.add('hidden');
-    googleVerifying?.classList.remove('hidden');
-
-    setTimeout(() => {
-      let targetAccId = '';
-      if (existingAcc) {
-        targetAccId = existingAcc.id;
-        existingAcc.isGoogle = true;
-      } else {
-        if (savedAccounts.length >= 20) {
-          alert(isEn ? 'Maximum limit of 20 accounts reached!' : 'Đã đạt giới hạn tối đa 20 tài khoản!');
-          googleVerifying?.classList.add('hidden');
-          googleStepPwd?.classList.remove('hidden');
-          return;
-        }
-
-        // Generate full name from email prefix or student code
-        let rawName = email.split('@')[0];
-        let displayName = rawName.toUpperCase();
-
-        const newAcc = {
-          id: 'acc-gg-' + Date.now(),
-          name: displayName,
-          email: email,
-          password: pwd,
-          role: email.includes('.edu.vn') ? 'Cá nhân' : 'Thành viên',
-          color: '#4285F4', // Google Blue
-          initials: computeInitials(displayName),
-          isGoogle: true,
-          createdAt: new Date().toISOString()
-        };
-
-        savedAccounts.push(newAcc);
-        targetAccId = newAcc.id;
-      }
-
-      activeAccountId = targetAccId;
-      localStorage.setItem('mylife_google_auth_done', 'true');
-      saveAccountsData();
-      renderAccountUI();
-      updateClock();
-      loadAccountData(activeAccountId);
-      closeGoogleAuthScreen();
-
-      const successMsg = isEn 
-        ? `Google authentication successful! Signed in as: ${email}` 
-        : `Xác thực Google thành công! Đã đăng nhập: ${email}`;
-      if (typeof showHint === 'function') showHint(successMsg);
-    }, 600);
-  });
-
+    e.stopImmediatePropagation();
+    alert('Đăng nhập bằng email/mật khẩu giả lập đã được tắt. Hãy sử dụng nút Đăng nhập Google.');
+    openGoogleAuthScreen();
+  }, true);
 
   /* ============================================================
    * HELPER: Format / parse VND numbers with dot separators
@@ -2257,9 +2144,10 @@ document.addEventListener('DOMContentLoaded', () => {
       localStorage.setItem('mylife_transactions_v2', JSON.stringify(transactions));
     }
     const curAcc = savedAccounts.find(a => a.id === activeAccountId);
-    const targetId = curAcc?.uid || curAcc?.id || activeAccountId;
-    if (window.MyLifeFirebase?.isAvailable() && targetId) {
-      window.MyLifeFirebase.syncModuleToCloud(targetId, 'transactions', transactions);
+    const targetId = curAcc?.uid;
+    if (window.MyLifeFirebase?.isAvailable() && targetId &&
+        window.MyLifeFirebase.auth?.currentUser?.uid === targetId) {
+      window.MyLifeFirebase.syncModuleToCloud(targetId, 'transactions', transactions).catch(err => console.error('[MyLife] Lỗi đồng bộ giao dịch:', err));
     }
     renderAllFinanceViews();
     renderFinanceOverviewCard();
@@ -3220,9 +3108,10 @@ document.addEventListener('DOMContentLoaded', () => {
       localStorage.setItem('mylife_tasks', JSON.stringify(tasks));
     }
     const curAcc = savedAccounts.find(a => a.id === activeAccountId);
-    const targetId = curAcc?.uid || curAcc?.id || activeAccountId;
-    if (window.MyLifeFirebase?.isAvailable() && targetId) {
-      window.MyLifeFirebase.syncModuleToCloud(targetId, 'tasks', tasks);
+    const targetId = curAcc?.uid;
+    if (window.MyLifeFirebase?.isAvailable() && targetId &&
+        window.MyLifeFirebase.auth?.currentUser?.uid === targetId) {
+      window.MyLifeFirebase.syncModuleToCloud(targetId, 'tasks', tasks).catch(err => console.error('[MyLife] Lỗi đồng bộ công việc:', err));
     }
     renderTasks();
     renderDeepTasksView();
@@ -3236,6 +3125,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     populateProjectDropdowns();
     renderDeepTasksView();
+    const curAcc = savedAccounts.find(a => a.id === activeAccountId);
+    const targetId = curAcc?.uid;
+    if (window.MyLifeFirebase?.isAvailable() && targetId &&
+        window.MyLifeFirebase.auth?.currentUser?.uid === targetId) {
+      window.MyLifeFirebase.syncModuleToCloud(targetId, 'projects', projects)
+        .catch(err => console.error('[MyLife] Lỗi đồng bộ dự án:', err));
+    }
   }
 
   function saveTaskSettings() {
@@ -3247,6 +3143,13 @@ document.addEventListener('DOMContentLoaded', () => {
     renderTasks();
     renderDeepTasksView();
     if (typeof renderSmartNotifications === 'function') renderSmartNotifications();
+    const curAcc = savedAccounts.find(a => a.id === activeAccountId);
+    const targetId = curAcc?.uid;
+    if (window.MyLifeFirebase?.isAvailable() && targetId &&
+        window.MyLifeFirebase.auth?.currentUser?.uid === targetId) {
+      window.MyLifeFirebase.syncModuleToCloud(targetId, 'taskSettings', taskSettings)
+        .catch(err => console.error('[MyLife] Lỗi đồng bộ cài đặt công việc:', err));
+    }
   }
 
   function getAccentBarClass(colorName) {
@@ -4527,9 +4430,10 @@ document.addEventListener('DOMContentLoaded', () => {
       localStorage.setItem('mylife_steps', healthData.steps);
     }
     const curAcc = savedAccounts.find(a => a.id === activeAccountId);
-    const targetId = curAcc?.uid || curAcc?.id || activeAccountId;
-    if (window.MyLifeFirebase?.isAvailable() && targetId) {
-      window.MyLifeFirebase.syncModuleToCloud(targetId, 'health', healthData);
+    const targetId = curAcc?.uid;
+    if (window.MyLifeFirebase?.isAvailable() && targetId &&
+        window.MyLifeFirebase.auth?.currentUser?.uid === targetId) {
+      window.MyLifeFirebase.syncModuleToCloud(targetId, 'health', healthData).catch(err => console.error('[MyLife] Lỗi đồng bộ sức khỏe:', err));
     }
     renderHealthOverviewCard();
     renderHealthView();
@@ -9448,16 +9352,31 @@ Quy tắc: Khi người dùng yêu cầu tác vụ, BẮT BUỘC PHẢI GỌI FU
   const initialView = localStorage.getItem('mylife_active_view') || 'overview';
   switchMainView(initialView);
 
-  // Hiển thị cổng xác thực đăng nhập Google khi mở ứng dụng (nếu chưa xác thực)
-  if (localStorage.getItem('mylife_google_auth_done') !== 'true') {
+  // Firebase Authentication là nguồn xác thực duy nhất; không tin cờ LocalStorage.
+  const firebaseAuth = window.MyLifeFirebase?.auth;
+  if (firebaseAuth) {
+    firebaseAuth.onAuthStateChanged(async (user) => {
+      if (!user) {
+        localStorage.removeItem('mylife_google_auth_done');
+        openGoogleAuthScreen();
+        return;
+      }
+
+      try {
+        await handleFirebaseUserLoginSuccess(user);
+      } catch (err) {
+        console.error('[MyLife] Không thể khôi phục phiên Firebase:', err);
+        localStorage.removeItem('mylife_google_auth_done');
+        openGoogleAuthScreen();
+        alert('Không thể tải phiên làm việc. Vui lòng thử đăng nhập lại. ' + (err.message || ''));
+      }
+    });
+  } else {
+    localStorage.removeItem('mylife_google_auth_done');
     openGoogleAuthScreen();
   }
 
-  // Tự động đẩy đồng bộ dữ liệu ban đầu lên Firebase Firestore sau 1.2 giây
-  setTimeout(() => {
-    if (typeof triggerFullCloudSync === 'function') {
-      triggerFullCloudSync(false);
-    }
-  }, 1200);
+  // Không tự đồng bộ khi chưa xác thực Firebase.
+  // Chỉ onAuthStateChanged mới cho phép khôi phục phiên và tải dữ liệu.
 
 });

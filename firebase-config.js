@@ -41,7 +41,7 @@ window.MyLifeFirebase = {
   auth: fbAuth,
   db: fbDb,
   analytics: fbAnalytics,
-  isAvailable: () => !!fbDb,
+  isAvailable: () => !!fbDb && !!fbAuth,
 
   /**
    * 1. Đăng nhập trực tiếp bằng Google Popup chính chủ
@@ -52,79 +52,115 @@ window.MyLifeFirebase = {
     provider.addScope('profile');
     provider.addScope('email');
     provider.setCustomParameters({ prompt: 'select_account' });
-    const result = await fbAuth.signInWithPopup(provider);
-    return result.user;
+    try {
+      const result = await fbAuth.signInWithPopup(provider);
+      return result.user;
+    } catch (err) {
+      // Một số trình duyệt/chế độ riêng tư chặn popup; chuyển sang redirect.
+      if (err.code === 'auth/popup-blocked' ||
+          err.code === 'auth/operation-not-supported-in-this-environment') {
+        await fbAuth.signInWithRedirect(provider);
+        return null; // onAuthStateChanged sẽ tiếp tục luồng đăng nhập.
+      }
+      throw err;
+    }
   },
 
   /**
    * 2. Đồng bộ TOÀN BỘ dữ liệu tài khoản lên Firestore (hiển thị trực tiếp trong collection 'mylife_accounts')
    */
   syncAccountDataToCloud: async function(account, payload) {
-    if (!fbDb) return false;
-    const accId = account.uid || account.id || 'acc-1';
+    if (!fbDb || !fbAuth || !account?.uid) {
+      throw new Error('Thiếu Firebase hoặc UID tài khoản.');
+    }
+    const uid = account.uid;
+    if (!fbAuth.currentUser || fbAuth.currentUser.uid !== uid) {
+      throw new Error('Từ chối đồng bộ: UID không khớp người đang đăng nhập.');
+    }
+
+    const safePayload = payload || {};
     try {
-      await fbDb.collection('mylife_accounts').doc(accId).set({
-        accountId: accId,
-        uid: account.uid || null,
+      await fbDb.collection('mylife_accounts').doc(uid).set({
+        accountId: uid,
+        uid,
         name: account.name || 'Người dùng',
-        email: account.email || '',
+        email: account.email || fbAuth.currentUser.email || '',
         role: account.role || 'Thành viên',
         color: account.color || '#4285F4',
         initials: account.initials || 'ML',
-        isGoogle: !!account.isGoogle,
-        tasks: payload.tasks || [],
-        health: payload.health || {},
-        transactions: payload.transactions || [],
-        projects: payload.projects || [],
+        isGoogle: true,
+        tasks: safePayload.tasks || [],
+        health: safePayload.health || {},
+        transactions: safePayload.transactions || [],
+        projects: safePayload.projects || [],
+        taskSettings: safePayload.taskSettings || {},
         lastSyncedAt: firebase.firestore.FieldValue.serverTimestamp(),
         clientTime: new Date().toISOString()
       }, { merge: true });
 
-      // Cập nhật trạng thái vào mylife_system
-      await fbDb.collection('mylife_system').doc('sync_status').set({
-        lastActiveAccount: accId,
+      // Trạng thái đồng bộ được tách theo UID, không dùng document chung.
+      await fbDb.collection('mylife_system').doc(uid).set({
+        lastActiveAccount: uid,
         lastActiveName: account.name || '',
         lastSynced: firebase.firestore.FieldValue.serverTimestamp()
       }, { merge: true });
 
-      console.log(`☁️ [Firebase Cloud] Đã đồng bộ thành công cho: ${account.name} (${accId})`);
+      console.log(`☁️ [Firebase] Đã đồng bộ UID: ${uid}`);
       return true;
     } catch (err) {
-      console.error('[Firebase] Lỗi đồng bộ đám mây:', err);
-      return false;
+      console.error('[Firebase] Lỗi đồng bộ:', err);
+      throw err;
     }
   },
 
-  /**
-   * 3. Tải toàn bộ dữ liệu tài khoản từ Firestore về máy
-   */
   fetchAccountDataFromCloud: async function(account) {
-    if (!fbDb) return null;
-    const accId = account.uid || account.id || 'acc-1';
-    try {
-      const doc = await fbDb.collection('mylife_accounts').doc(accId).get();
-      if (doc.exists) {
-        return doc.data();
-      }
-    } catch (err) {
-      console.warn('[Firebase] Lỗi tải dữ liệu từ mây:', err);
+    if (!fbDb || !fbAuth || !account?.uid) {
+      throw new Error('Thiếu Firebase hoặc UID tài khoản.');
     }
+    const uid = account.uid;
+    if (!fbAuth.currentUser || fbAuth.currentUser.uid !== uid) {
+      throw new Error('Từ chối tải dữ liệu: UID không khớp người đang đăng nhập.');
+    }
+
+    const doc = await fbDb.collection('mylife_accounts').doc(uid).get();
+    if (doc.exists) return doc.data();
+
+    // Pilot bắt đầu với dữ liệu mới: tuyệt đối không đọc document legacy.
+    // Tài khoản UID chưa có document sẽ được khởi tạo từ dữ liệu mới ở client.
     return null;
   },
 
-  /**
-   * 4. Đồng bộ riêng từng phân hệ (Tasks, Health, Transactions)
-   */
-  syncModuleToCloud: async function(accId, moduleKey, data) {
-    if (!fbDb || !accId) return;
-    try {
-      const updateObj = {
-        [moduleKey]: data,
-        lastSyncedAt: firebase.firestore.FieldValue.serverTimestamp()
-      };
-      await fbDb.collection('mylife_accounts').doc(accId).set(updateObj, { merge: true });
-    } catch (err) {
-      console.warn(`[Firebase] Đồng bộ ${moduleKey} tạm hoãn:`, err.message);
+  fetchModuleFromCloud: async function(uid, moduleKey) {
+    if (!fbDb || !fbAuth || !uid) return null;
+    if (!fbAuth.currentUser || fbAuth.currentUser.uid !== uid) {
+      throw new Error('Từ chối tải phân hệ: UID không khớp người đang đăng nhập.');
     }
+    const aliases = { health_data: 'health' };
+    const key = aliases[moduleKey] || moduleKey;
+    const allowed = ['tasks', 'health', 'transactions', 'projects', 'taskSettings'];
+    if (!allowed.includes(key)) {
+      throw new Error('Phân hệ không hợp lệ: ' + moduleKey);
+    }
+    const doc = await fbDb.collection('mylife_accounts').doc(uid).get();
+    return doc.exists ? (doc.data()[key] ?? null) : null;
+  },
+
+  syncModuleToCloud: async function(uid, moduleKey, data) {
+    if (!fbDb || !fbAuth || !uid) return false;
+    if (!fbAuth.currentUser || fbAuth.currentUser.uid !== uid) {
+      throw new Error('Từ chối đồng bộ phân hệ: UID không khớp người đang đăng nhập.');
+    }
+    const aliases = { health_data: 'health' };
+    const key = aliases[moduleKey] || moduleKey;
+    const allowed = ['tasks', 'health', 'transactions', 'projects', 'taskSettings'];
+    if (!allowed.includes(key)) {
+      throw new Error('Phân hệ không hợp lệ: ' + moduleKey);
+    }
+    await fbDb.collection('mylife_accounts').doc(uid).set({
+      [key]: data,
+      lastSyncedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      clientTime: new Date().toISOString()
+    }, { merge: true });
+    return true;
   }
 };

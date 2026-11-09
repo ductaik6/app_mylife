@@ -1,0 +1,21 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedInAs(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    // Each authenticated Google/Firebase user owns exactly one account document.
+    match /mylife_accounts/{uid} {
+      allow read, create, update, delete: if signedInAs(uid);
+    }
+
+    // Per-user sync metadata. Do not use a shared "sync_status" document.
+    match /mylife_system/{uid} {
+      allow read, create, update, delete: if signedInAs(uid);
+    }
+
+    // All other documents are denied by default.
+  }
+}
