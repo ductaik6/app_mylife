@@ -52,8 +52,18 @@ window.MyLifeFirebase = {
     provider.addScope('profile');
     provider.addScope('email');
     provider.setCustomParameters({ prompt: 'select_account' });
-    const result = await fbAuth.signInWithPopup(provider);
-    return result.user;
+    try {
+      const result = await fbAuth.signInWithPopup(provider);
+      return result.user;
+    } catch (err) {
+      // Một số trình duyệt/chế độ riêng tư chặn popup; chuyển sang redirect.
+      if (err.code === 'auth/popup-blocked' ||
+          err.code === 'auth/operation-not-supported-in-this-environment') {
+        await fbAuth.signInWithRedirect(provider);
+        return null; // onAuthStateChanged sẽ tiếp tục luồng đăng nhập.
+      }
+      throw err;
+    }
   },
 
   /**
