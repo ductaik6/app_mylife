@@ -1477,15 +1477,8 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   function openAddAccountModal() {
-    if (savedAccounts.length >= 20) {
-      const isEn = (typeof currentLang !== 'undefined' && currentLang === 'en');
-      alert(isEn ? 'Maximum limit of 20 accounts reached!' : 'Đã đạt giới hạn tối đa 20 tài khoản!');
-      return;
-    }
-    if (modalAddAccount) {
-      modalAddAccount.classList.remove('hidden');
-      document.getElementById('input-acc-name')?.focus();
-    }
+    alert('Trong bản thử nghiệm nhiều người dùng, hãy đăng nhập bằng Google. Mỗi tài khoản Google tương ứng với một người dùng riêng.');
+    openGoogleAuthScreen();
     toggleAccountDropdown(false);
   }
 
@@ -1503,48 +1496,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   formAddAccount?.addEventListener('submit', (e) => {
     e.preventDefault();
-    if (savedAccounts.length >= 20) {
-      const isEn = (typeof currentLang !== 'undefined' && currentLang === 'en');
-      alert(isEn ? 'Maximum limit of 20 accounts reached!' : 'Đã đạt giới hạn tối đa 20 tài khoản!');
-      return;
-    }
-
-    const nameInput = document.getElementById('input-acc-name');
-    const emailInput = document.getElementById('input-acc-email');
-    const pwdInput = document.getElementById('input-acc-password');
-    const roleSelect = document.getElementById('select-acc-role');
-
-    const name = nameInput ? nameInput.value.trim() : '';
-    const email = emailInput ? emailInput.value.trim() : '';
-    const password = pwdInput ? pwdInput.value.trim() : '';
-    const role = roleSelect ? roleSelect.value : 'Thành viên';
-
-    if (!name || !email || !password) return;
-
-    const newAcc = {
-      id: 'acc-' + Date.now(),
-      name: name,
-      email: email,
-      password: password,
-      role: role,
-      color: selectedAvatarColor || '#4361ee',
-      initials: computeInitials(name),
-      createdAt: new Date().toISOString()
-    };
-
-    savedAccounts.push(newAcc);
-    activeAccountId = newAcc.id;
-    saveAccountsData();
-    renderAccountUI();
-    updateClock();
-    loadAccountData(activeAccountId);
+    alert('Trong bản thử nghiệm, mỗi người dùng đăng nhập bằng tài khoản Google riêng. Không tạo tài khoản nội bộ bằng email/mật khẩu.');
     closeAddAccountModal();
-
-    const isEn = (typeof currentLang !== 'undefined' && currentLang === 'en');
-    const successMsg = isEn 
-      ? `Successfully logged into new account: ${newAcc.name}!` 
-      : `Đăng nhập thành công tài khoản mới: ${newAcc.name}!`;
-    if (typeof showHint === 'function') showHint(successMsg);
+    openGoogleAuthScreen();
   });
 
   // Khôi phục trạng thái khóa phiên nếu trước đó đã khóa
@@ -1848,95 +1802,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  formGoogleAuth?.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const email = currentGoogleEmailCandidate || inputGoogleEmail?.value?.trim() || '';
-    const pwd = inputGooglePwd?.value || '';
-    const isEn = (typeof currentLang !== 'undefined' && currentLang === 'en');
-
-    if (!email || !pwd) return;
-
-    if (pwd.length < 4) {
-      if (googleAuthError && googleAuthErrorText) {
-        googleAuthErrorText.textContent = isEn 
-          ? 'Password must be at least 4 characters!' 
-          : 'Mật khẩu Google phải có tối thiểu 4 ký tự!';
-        googleAuthError.classList.remove('hidden');
-      }
-      return;
-    }
-
-    // Check if account already exists in savedAccounts
-    const existingAcc = savedAccounts.find(a => (a.email || '').toLowerCase() === email.toLowerCase());
-
-    if (existingAcc) {
-      // Validate password with registered account
-      const expected = String(existingAcc.password || '123456');
-      if (pwd !== expected) {
-        if (googleAuthError && googleAuthErrorText) {
-          googleAuthErrorText.textContent = isEn 
-            ? 'Incorrect Google account password! Verification failed.' 
-            : 'Mật khẩu tài khoản Google không chính xác! Xác thực thất bại.';
-          googleAuthError.classList.remove('hidden');
-          inputGooglePwd?.classList.add('ring-2', 'ring-rose-500');
-          setTimeout(() => inputGooglePwd?.classList.remove('ring-2', 'ring-rose-500'), 1500);
-        }
-        return;
-      }
-    }
-
-    // Handshake animation for authentic Google Identity feel
-    googleStepPwd?.classList.add('hidden');
-    googleVerifying?.classList.remove('hidden');
-
-    setTimeout(() => {
-      let targetAccId = '';
-      if (existingAcc) {
-        targetAccId = existingAcc.id;
-        existingAcc.isGoogle = true;
-      } else {
-        if (savedAccounts.length >= 20) {
-          alert(isEn ? 'Maximum limit of 20 accounts reached!' : 'Đã đạt giới hạn tối đa 20 tài khoản!');
-          googleVerifying?.classList.add('hidden');
-          googleStepPwd?.classList.remove('hidden');
-          return;
-        }
-
-        // Generate full name from email prefix or student code
-        let rawName = email.split('@')[0];
-        let displayName = rawName.toUpperCase();
-
-        const newAcc = {
-          id: 'acc-gg-' + Date.now(),
-          name: displayName,
-          email: email,
-          password: pwd,
-          role: email.includes('.edu.vn') ? 'Cá nhân' : 'Thành viên',
-          color: '#4285F4', // Google Blue
-          initials: computeInitials(displayName),
-          isGoogle: true,
-          createdAt: new Date().toISOString()
-        };
-
-        savedAccounts.push(newAcc);
-        targetAccId = newAcc.id;
-      }
-
-      activeAccountId = targetAccId;
-      localStorage.setItem('mylife_google_auth_done', 'true');
-      saveAccountsData();
-      renderAccountUI();
-      updateClock();
-      loadAccountData(activeAccountId);
-      closeGoogleAuthScreen();
-
-      const successMsg = isEn 
-        ? `Google authentication successful! Signed in as: ${email}` 
-        : `Xác thực Google thành công! Đã đăng nhập: ${email}`;
-      if (typeof showHint === 'function') showHint(successMsg);
-    }, 600);
-  });
-
+  // Không xác thực Google bằng email/mật khẩu nhập trong giao diện.
+  // Firebase Google Popup/Redirect là phương thức xác thực duy nhất.
 
   // Chặn cổng email/mật khẩu giả lập: mật khẩu nhập ở đây không xác thực với Google.
   formGoogleAuth?.addEventListener('submit', (e) => {
@@ -2277,9 +2144,10 @@ document.addEventListener('DOMContentLoaded', () => {
       localStorage.setItem('mylife_transactions_v2', JSON.stringify(transactions));
     }
     const curAcc = savedAccounts.find(a => a.id === activeAccountId);
-    const targetId = curAcc?.uid || curAcc?.id || activeAccountId;
-    if (window.MyLifeFirebase?.isAvailable() && targetId) {
-      window.MyLifeFirebase.syncModuleToCloud(targetId, 'transactions', transactions);
+    const targetId = curAcc?.uid;
+    if (window.MyLifeFirebase?.isAvailable() && targetId &&
+        window.MyLifeFirebase.auth?.currentUser?.uid === targetId) {
+      window.MyLifeFirebase.syncModuleToCloud(targetId, 'transactions', transactions).catch(err => console.error('[MyLife] Lỗi đồng bộ giao dịch:', err));
     }
     renderAllFinanceViews();
     renderFinanceOverviewCard();
@@ -3240,9 +3108,10 @@ document.addEventListener('DOMContentLoaded', () => {
       localStorage.setItem('mylife_tasks', JSON.stringify(tasks));
     }
     const curAcc = savedAccounts.find(a => a.id === activeAccountId);
-    const targetId = curAcc?.uid || curAcc?.id || activeAccountId;
-    if (window.MyLifeFirebase?.isAvailable() && targetId) {
-      window.MyLifeFirebase.syncModuleToCloud(targetId, 'tasks', tasks);
+    const targetId = curAcc?.uid;
+    if (window.MyLifeFirebase?.isAvailable() && targetId &&
+        window.MyLifeFirebase.auth?.currentUser?.uid === targetId) {
+      window.MyLifeFirebase.syncModuleToCloud(targetId, 'tasks', tasks).catch(err => console.error('[MyLife] Lỗi đồng bộ công việc:', err));
     }
     renderTasks();
     renderDeepTasksView();
@@ -4561,9 +4430,10 @@ document.addEventListener('DOMContentLoaded', () => {
       localStorage.setItem('mylife_steps', healthData.steps);
     }
     const curAcc = savedAccounts.find(a => a.id === activeAccountId);
-    const targetId = curAcc?.uid || curAcc?.id || activeAccountId;
-    if (window.MyLifeFirebase?.isAvailable() && targetId) {
-      window.MyLifeFirebase.syncModuleToCloud(targetId, 'health', healthData);
+    const targetId = curAcc?.uid;
+    if (window.MyLifeFirebase?.isAvailable() && targetId &&
+        window.MyLifeFirebase.auth?.currentUser?.uid === targetId) {
+      window.MyLifeFirebase.syncModuleToCloud(targetId, 'health', healthData).catch(err => console.error('[MyLife] Lỗi đồng bộ sức khỏe:', err));
     }
     renderHealthOverviewCard();
     renderHealthView();
