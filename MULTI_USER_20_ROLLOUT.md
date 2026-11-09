@@ -1,44 +1,45 @@
 # MyLife multi-user 20 — rollout notes
 
-## Scope
-This branch prepares the static MyLife app for up to 20 distinct Firebase Authentication users. It does not make the app production-ready by itself and does not deploy Firestore rules.
+## Test objective
+Run a fresh-data pilot with up to 20 distinct Google/Firebase Authentication users. Existing legacy account data is intentionally out of scope and will not be migrated.
 
-## Data identity
-- Firebase Authentication UID is the cloud ownership key.
-- New Google accounts use the full UID as their local account key.
-- Existing local account IDs are retained to avoid losing browser-local cache.
-- The client first reads `mylife_accounts/{uid}`; during transition it may attempt a legacy document read using the saved local account ID.
-- A successful legacy read is not a safe migration mechanism after strict rules are deployed. Export/merge legacy documents with a trusted Admin SDK or a carefully supervised Firebase Console process before enforcing these rules.
+## Identity and data isolation
+- Firebase Authentication UID is the only canonical identity for Google test users.
+- New account document path: `mylife_accounts/{uid}`.
+- Per-user sync metadata path: `mylife_system/{uid}`.
+- A user cannot switch to another locally saved account unless that account matches the currently authenticated Firebase UID.
+- The old local demo/password account flow and Google bypass are blocked for this pilot.
+
+## Fresh-data behavior
+- Login does not read legacy `acc-gg-*` documents.
+- The app initializes the signed-in UID's local data space and uploads the new test data.
+- Existing legacy documents are left untouched in Firestore.
+- Do not manually delete old documents; they are simply not used by this test branch.
 
 ## Firestore rules
-`firestore.rules` is the proposed rules source. It is intentionally not deployed by this commit.
-Before publishing it:
-1. Back up/export the Firestore database.
-2. Migrate required legacy `acc-gg-*` documents to `mylife_accounts/{Firebase UID}`.
-3. Verify each UID-to-legacy-document mapping with the actual Firebase Authentication user.
-4. Test with two separate Google accounts in the Firebase Rules Playground or emulator.
-5. Publish only after the app writes exclusively to UID documents.
+The proposed `firestore.rules` file restricts both account and sync-status documents to the matching authenticated UID. It is not deployed automatically.
+Publish these rules only after deploying this branch's UID-based client code. The currently deployed main branch may still use legacy document IDs and shared sync-status paths, so publishing the strict rules before deploying the branch can break the current website.
 
-## Data currently synchronized
+## Included modules
 - tasks
 - projects
 - transactions
 - health
 - taskSettings
 
-The finance PIN remains browser-local and is only a UI lock, not server-side authorization. AI chat history is not currently persisted to Firestore by the existing app.
+Finance PIN remains a browser-side UI lock, not server-side protection. AI chat history remains browser-local. Gemini is still called from the browser; do not distribute a shared secret API key in the frontend.
 
-## Important limitations before inviting 20 testers
-- Do not treat the client-side 20-account cap as access control; it is only a UI limit.
-- Per-user UID rules are the actual data boundary.
-- The current full-document sync can still overwrite newer data when the same user edits from multiple devices at once. This branch is aimed at distinct users using separate accounts; multi-device conflict resolution needs a separate revision/version strategy.
-- Gemini calls still run from the browser. Do not place a shared secret API key in the deployed frontend. A backend proxy with Firebase ID-token verification and per-UID rate limits is the recommended next step.
-- Browser runtime, real Firebase Rules, and 20-user concurrent load tests have not been executed by this change.
+## Before inviting 20 testers
+1. Deploy the branch to a staging URL or merge after review.
+2. Enable Google provider in Firebase Authentication.
+3. Add the staging/production host to Firebase Authentication Authorized domains.
+4. Publish `firestore.rules` after the UID-based app is deployed.
+5. Test with two separate Google accounts first: each creates records and confirms the other cannot read them.
+6. Test sign-out, refresh, and sign-in again.
+7. Only then invite the remaining users.
 
-## Manual smoke test
-1. Sign in as Google user A; create one task, project, transaction, and health log.
-2. Sign out; sign in as user B; confirm A's data is not visible.
-3. Create different records as B.
-4. Sign out and sign back in as A; verify A's records remain.
-5. With A authenticated, attempt to read/write `mylife_accounts/{B_UID}`; Firestore must reject it.
-6. Repeat with two separate browsers/devices and inspect for sync overwrites.
+## Validation and limitations
+- JavaScript syntax compilation passed for `app.js` and `firebase-config.js`.
+- No real browser login, Firebase Rules Playground, or 20-user concurrent load test has been run yet.
+- The current full-document sync may overwrite a user's own newer edits if the same user edits from multiple devices simultaneously. Conflict/version handling is a separate required improvement for multi-device usage.
+- The 20-account count in the browser is a convenience limit, not a security boundary. UID-based Firestore rules provide data isolation.
