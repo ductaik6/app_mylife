@@ -45,3 +45,9 @@ Finance PIN remains a browser-side UI lock, not server-side protection. AI chat 
 - No real browser login, Firebase Rules Playground, or 20-user concurrent load test has been run yet.
 - The current full-document sync may overwrite a user's own newer edits if the same user edits from multiple devices simultaneously. Conflict/version handling is a separate required improvement for multi-device usage.
 - The 20-account count in the browser is a convenience limit, not a security boundary. UID-based Firestore rules provide data isolation.
+
+## Latest pre-staging review (2026-11-09)
+- Added `scripts/validate-pilot.js` to assert the Firebase auth observer, UID-only Firestore document paths, authenticated-UID checks on module writes, and absence of the temporary open-database rule.
+- GitHub Actions now runs the pilot safety checks in addition to JavaScript syntax checks.
+- This is static validation only. It does not replace browser sign-in, two-user isolation testing, Firestore Rules Playground checks, or a 20-user load test.
+- Do not publish the proposed rules until the UID-based client is actually deployed to the intended test host. The public GitHub Pages site remains on `main` until an authorized merge/deployment.
