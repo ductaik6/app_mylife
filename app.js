@@ -1743,37 +1743,24 @@ document.addEventListener('DOMContentLoaded', () => {
       (email.split('@')[0] || 'User').toUpperCase();
     const photoURL = user.photoURL || '';
 
-    // UID là định danh chính; email chỉ dùng để nhận diện tài khoản Google cũ.
-    let existingAcc = savedAccounts.find(a => a.uid === uid);
-    if (!existingAcc) {
-      existingAcc = savedAccounts.find(a =>
-        a.isGoogle === true &&
-        (a.email || '').toLowerCase() === email.toLowerCase()
-      );
-    }
+    // Chỉ ghép tài khoản theo Firebase UID. Không nhập dữ liệu từ tài khoản
+    // cũ chỉ vì trùng email: email không phải khóa sở hữu dữ liệu.
+    let existingAcc = savedAccounts.find(a => a.uid === uid || a.id === uid);
 
-    let targetAccId;
+    // Tài khoản mới luôn có ID nội bộ bằng UID đầy đủ.
+    // Các document acc-gg-* cũ được bỏ qua theo yêu cầu, không tự di chuyển.
+    const targetAccId = uid;
     if (existingAcc) {
-      targetAccId = existingAcc.id;
+      existingAcc.id = uid;
       existingAcc.uid = uid;
-      existingAcc.name = displayName || existingAcc.name;
+      existingAcc.name = displayName;
       existingAcc.email = email;
       existingAcc.photoURL = photoURL;
       existingAcc.isGoogle = true;
-      // Giữ ID nội bộ cũ để không làm mất cache LocalStorage hiện có.
+      existingAcc.password = '';
     } else {
-      const googleAccountCount = savedAccounts.filter(a => a.isGoogle).length;
-      if (googleAccountCount >= 20) {
-        alert(isEn ? 'Maximum limit of 20 Google accounts reached!' :
-          'Đã đạt giới hạn 20 tài khoản Google thử nghiệm!');
-        await window.MyLifeFirebase.auth.signOut();
-        return false;
-      }
-
-      // UID đầy đủ được dùng làm khóa LocalStorage mới, tránh va chạm ID rút gọn.
-      targetAccId = uid;
       existingAcc = {
-        id: targetAccId,
+        id: uid,
         uid,
         name: displayName,
         email,
@@ -1791,7 +1778,8 @@ document.addEventListener('DOMContentLoaded', () => {
     activeAccountId = targetAccId;
     saveAccountsData();
 
-    // Tải cloud trước khi khởi tạo/đồng bộ local để tránh đẩy dữ liệu rỗng đè dữ liệu cũ.
+    // Tài khoản mới sẽ bắt đầu bằng dữ liệu mặc định riêng theo UID.
+    // Không đọc/nhập các document acc-gg-* cũ.
     let cloudData = null;
     try {
       cloudData = await window.MyLifeFirebase.fetchAccountDataFromCloud(existingAcc);
