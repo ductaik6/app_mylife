@@ -1693,7 +1693,7 @@ document.addEventListener('DOMContentLoaded', () => {
       
       const user = await window.MyLifeFirebase.signInWithGooglePopup();
       if (user) {
-        handleFirebaseUserLoginSuccess(user);
+        await handleFirebaseUserLoginSuccess(user);
       }
     } catch (err) {
       console.error('Firebase Google Login Error:', err);
@@ -1711,75 +1711,110 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  function handleFirebaseUserLoginSuccess(user) {
+  async function handleFirebaseUserLoginSuccess(user) {
     const isEn = (typeof currentLang !== 'undefined' && currentLang === 'en');
+    if (!user?.uid) throw new Error('Firebase không trả về UID hợp lệ.');
+
+    const uid = user.uid;
     const email = user.email || '';
-    const displayName = user.displayName || (email.split('@')[0] || 'User').toUpperCase();
+    const displayName = user.displayName ||
+      (email.split('@')[0] || 'User').toUpperCase();
     const photoURL = user.photoURL || '';
 
-    // Kiểm tra xem tài khoản đã từng đăng nhập chưa
-    let existingAcc = savedAccounts.find(a => (a.email || '').toLowerCase() === email.toLowerCase());
-    let targetAccId = '';
+    // UID là định danh chính; email chỉ dùng để nhận diện tài khoản Google cũ.
+    let existingAcc = savedAccounts.find(a => a.uid === uid);
+    if (!existingAcc) {
+      existingAcc = savedAccounts.find(a =>
+        a.isGoogle === true &&
+        (a.email || '').toLowerCase() === email.toLowerCase()
+      );
+    }
 
+    let targetAccId;
     if (existingAcc) {
+      targetAccId = existingAcc.id;
+      existingAcc.uid = uid;
       existingAcc.name = displayName || existingAcc.name;
+      existingAcc.email = email;
       existingAcc.photoURL = photoURL;
       existingAcc.isGoogle = true;
-      existingAcc.uid = user.uid;
-      targetAccId = existingAcc.id;
+      // Giữ ID nội bộ cũ để không làm mất cache LocalStorage hiện có.
     } else {
-      if (savedAccounts.length >= 20) {
-        alert(isEn ? 'Maximum limit of 20 accounts reached!' : 'Đã đạt giới hạn tối đa 20 tài khoản!');
-        return;
+      const googleAccountCount = savedAccounts.filter(a => a.isGoogle).length;
+      if (googleAccountCount >= 20) {
+        alert(isEn ? 'Maximum limit of 20 Google accounts reached!' :
+          'Đã đạt giới hạn 20 tài khoản Google thử nghiệm!');
+        await window.MyLifeFirebase.auth.signOut();
+        return false;
       }
 
-      const newAcc = {
-        id: 'acc-gg-' + (user.uid ? user.uid.substring(0, 10) : Date.now()),
-        uid: user.uid,
+      targetAccId = 'acc-gg-' + uid.substring(0, 10);
+      existingAcc = {
+        id: targetAccId,
+        uid,
         name: displayName,
-        email: email,
+        email,
         password: '',
         role: email.includes('.edu.vn') ? 'Cá nhân' : 'Thành viên',
         color: '#4285F4',
         initials: computeInitials(displayName),
         isGoogle: true,
-        photoURL: photoURL,
+        photoURL,
         createdAt: new Date().toISOString()
       };
-
-      savedAccounts.push(newAcc);
-      targetAccId = newAcc.id;
+      savedAccounts.push(existingAcc);
     }
 
     activeAccountId = targetAccId;
-    localStorage.setItem('mylife_google_auth_done', 'true');
     saveAccountsData();
+
+    // Tải cloud trước khi khởi tạo/đồng bộ local để tránh đẩy dữ liệu rỗng đè dữ liệu cũ.
+    let cloudData = null;
+    try {
+      cloudData = await window.MyLifeFirebase.fetchAccountDataFromCloud(existingAcc);
+    } catch (err) {
+      console.error('[MyLife] Không tải được dữ liệu cloud:', err);
+      alert(isEn
+        ? 'Could not load your cloud data. No cloud overwrite was performed.'
+        : 'Không tải được dữ liệu đám mây. MyLife chưa tự động ghi đè dữ liệu lên cloud.');
+      return false;
+    }
+
+    if (cloudData) {
+      const cloudToLocal = {
+        tasks: cloudData.tasks,
+        projects: cloudData.projects,
+        transactions: cloudData.transactions,
+        health_data: cloudData.health
+      };
+
+      Object.entries(cloudToLocal).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          localStorage.setItem(
+            getAccountDataKey(key, targetAccId),
+            JSON.stringify(value)
+          );
+        }
+      });
+    }
+
+    localStorage.setItem('mylife_google_auth_done', 'true');
     renderAccountUI();
     updateClock();
     loadAccountData(activeAccountId);
     closeGoogleAuthScreen();
 
-    // Đồng bộ tức thời dữ liệu đám mây Firebase nếu có
-    if (window.MyLifeFirebase && user.uid) {
-      window.MyLifeFirebase.fetchModuleFromCloud(user.uid, 'tasks').then(cloudTasks => {
-        if (Array.isArray(cloudTasks) && cloudTasks.length > 0) {
-          tasks = cloudTasks;
-          localStorage.setItem(getAccountDataKey('tasks', activeAccountId), JSON.stringify(tasks));
-          if (typeof renderTasks === 'function') renderTasks();
-          if (typeof renderWeeklySchedule === 'function') renderWeeklySchedule();
-        }
-      });
-    }
-
-    const successMsg = isEn 
-      ? `Welcome ${displayName}! Google authentication successful.` 
+    const successMsg = isEn
+      ? `Welcome ${displayName}! Google authentication successful.`
       : `Chào mừng ${displayName}! Đã xác thực tài khoản Google thành công.`;
     if (typeof showHint === 'function') showHint(successMsg);
 
-    // Đồng bộ toàn bộ dữ liệu mới lên Firestore
-    setTimeout(() => {
-      triggerFullCloudSync(false);
-    }, 500);
+    // Chỉ đồng bộ sau khi đã tải cloud thành công hoặc xác nhận tài khoản mới.
+    const syncOk = await triggerFullCloudSync(false);
+    if (!syncOk) {
+      console.warn('[MyLife] Đăng nhập thành công nhưng chưa đồng bộ được dữ liệu.');
+    }
+    return true;
   }
 
   // Đồng bộ toàn bộ dữ liệu hiện tại lên Firebase Firestore
@@ -9453,11 +9488,7 @@ Quy tắc: Khi người dùng yêu cầu tác vụ, BẮT BUỘC PHẢI GỌI FU
     openGoogleAuthScreen();
   }
 
-  // Tự động đẩy đồng bộ dữ liệu ban đầu lên Firebase Firestore sau 1.2 giây
-  setTimeout(() => {
-    if (typeof triggerFullCloudSync === 'function') {
-      triggerFullCloudSync(false);
-    }
-  }, 1200);
+  // Không tự đồng bộ khi chưa xác thực Firebase.
+  // Cloud sync chỉ được kích hoạt sau khi Google Login hoàn tất.
 
 });
