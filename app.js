@@ -1439,7 +1439,21 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof showHint === 'function') showHint(msg);
   }
 
-  btnLockSession?.addEventListener('click', lockSession);
+  btnLockSession?.addEventListener('click', async () => {
+    const auth = window.MyLifeFirebase?.auth;
+    if (auth?.currentUser) {
+      try {
+        sessionStorage.removeItem('mylife_session_locked');
+        await auth.signOut();
+        // onAuthStateChanged sẽ đưa người dùng về màn hình đăng nhập.
+      } catch (err) {
+        console.error('[MyLife] Lỗi đăng xuất Firebase:', err);
+        alert('Không thể đăng xuất lúc này. Vui lòng thử lại.');
+      }
+      return;
+    }
+    lockSession();
+  });
 
   formUnlockSession?.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -1756,7 +1770,8 @@ document.addEventListener('DOMContentLoaded', () => {
         return false;
       }
 
-      targetAccId = 'acc-gg-' + uid.substring(0, 10);
+      // UID đầy đủ được dùng làm khóa LocalStorage mới, tránh va chạm ID rút gọn.
+      targetAccId = uid;
       existingAcc = {
         id: targetAccId,
         uid,
@@ -1832,8 +1847,13 @@ document.addEventListener('DOMContentLoaded', () => {
       return false;
     }
 
+    const authUser = window.MyLifeFirebase.auth?.currentUser;
     const curAcc = getActiveAccount();
-    if (!curAcc) return false;
+    if (!authUser || !curAcc || !curAcc.uid ||
+        authUser.uid !== curAcc.uid) {
+      if (showFeedback) alert('Phiên đăng nhập không hợp lệ. Vui lòng đăng nhập Google lại.');
+      return false;
+    }
 
     const payload = {
       tasks: tasks || [],
@@ -1842,7 +1862,16 @@ document.addEventListener('DOMContentLoaded', () => {
       projects: projects || []
     };
 
-    const ok = await window.MyLifeFirebase.syncAccountDataToCloud(curAcc, payload);
+    let ok = false;
+    try {
+      ok = await window.MyLifeFirebase.syncAccountDataToCloud(curAcc, payload);
+    } catch (err) {
+      console.error('[MyLife] Đồng bộ thất bại:', err);
+      if (showFeedback) {
+        alert('Đồng bộ thất bại: ' + (err.message || 'Lỗi không xác định'));
+      }
+      return false;
+    }
     if (ok && showFeedback) {
       const isEn = (typeof currentLang !== 'undefined' && currentLang === 'en');
       const msg = isEn 
