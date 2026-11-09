@@ -83,6 +83,7 @@ window.MyLifeFirebase = {
         health: safePayload.health || {},
         transactions: safePayload.transactions || [],
         projects: safePayload.projects || [],
+        taskSettings: safePayload.taskSettings || {},
         lastSyncedAt: firebase.firestore.FieldValue.serverTimestamp(),
         clientTime: new Date().toISOString()
       }, { merge: true });
@@ -136,7 +137,7 @@ window.MyLifeFirebase = {
     }
     const aliases = { health_data: 'health' };
     const key = aliases[moduleKey] || moduleKey;
-    const allowed = ['tasks', 'health', 'transactions', 'projects'];
+    const allowed = ['tasks', 'health', 'transactions', 'projects', 'taskSettings'];
     if (!allowed.includes(key)) {
       throw new Error('Phân hệ không hợp lệ: ' + moduleKey);
     }
@@ -151,7 +152,7 @@ window.MyLifeFirebase = {
     }
     const aliases = { health_data: 'health' };
     const key = aliases[moduleKey] || moduleKey;
-    const allowed = ['tasks', 'health', 'transactions', 'projects'];
+    const allowed = ['tasks', 'health', 'transactions', 'projects', 'taskSettings'];
     if (!allowed.includes(key)) {
       throw new Error('Phân hệ không hợp lệ: ' + moduleKey);
     }
