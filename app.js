@@ -1000,33 +1000,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof renderInitialWelcomeMessage === 'function') renderInitialWelcomeMessage();
     if (typeof renderSmartNotifications === 'function') renderSmartNotifications();
 
-    // 8. Tự động kiểm tra và tải cập nhật mới nhất từ Firebase Cloud nếu tài khoản có UID
-    const curAcc = savedAccounts.find(a => a.id === accId);
-    if (window.MyLifeFirebase?.isAvailable() && curAcc?.uid) {
-      window.MyLifeFirebase.fetchModuleFromCloud(curAcc.uid, 'tasks').then(cloudTasks => {
-        if (Array.isArray(cloudTasks) && cloudTasks.length > 0) {
-          tasks = cloudTasks;
-          localStorage.setItem(tasksKey, JSON.stringify(tasks));
-          if (typeof renderTasks === 'function') renderTasks();
-          if (typeof renderWeeklySchedule === 'function') renderWeeklySchedule();
-        }
-      });
-      window.MyLifeFirebase.fetchModuleFromCloud(curAcc.uid, 'health_data').then(cloudHealth => {
-        if (cloudHealth && typeof cloudHealth === 'object' && cloudHealth.lastActiveDate) {
-          healthData = cloudHealth;
-          localStorage.setItem(healthKey, JSON.stringify(healthData));
-          if (typeof updateHealth === 'function') updateHealth();
-        }
-      });
-      window.MyLifeFirebase.fetchModuleFromCloud(curAcc.uid, 'transactions').then(cloudTrans => {
-        if (Array.isArray(cloudTrans) && cloudTrans.length > 0) {
-          transactions = cloudTrans;
-          localStorage.setItem(transKey, JSON.stringify(transactions));
-          if (typeof renderFinanceOverviewCard === 'function') renderFinanceOverviewCard();
-          if (typeof renderAllFinanceViews === 'function' && financeUnlocked) renderAllFinanceViews();
-        }
-      });
-    }
+    // Pilot dữ liệu mới: không đọc bất kỳ dữ liệu cloud cũ nào khi đăng nhập.
+    // Dữ liệu cục bộ vừa khởi tạo sẽ được đồng bộ lên document UID sau khi xác thực.
   }
 
   function renderAccountUI() {
